@@ -84,6 +84,12 @@ func main() {
 	currentMessageLength += 7
 	setThrottleTime(&response, 3735928559, currentMessageLength + 4) // DEADBEEF for placeholder, +4 for message offset
 	currentMessageLength += 4
+
+	// set the tag buffer
+	response[currentMessageLength + 4] = 0x0
+	currentMessageLength += 1
+
+
 	setMessageSize(&response, currentMessageLength)
 
 
