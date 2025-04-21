@@ -73,8 +73,13 @@ func main() {
 		os.Exit(1)
 	}
 
-	setErrorCode(&response, 2) // no error
+	setErrorCode(&response, 0) // no error
 	currentMessageLength += 2
+	
+	// set the num_api_keys
+	response[currentMessageLength + 4] = 1
+	currentMessageLength += 1
+
 	setAPIVersionsAPIKey(&response, 18, 0, 5, currentMessageLength + 4) // + 4 because of the message_size offset
 	currentMessageLength += 6
 	setThrottleTime(&response, 3735928559, currentMessageLength + 4) // DEADBEEF for placeholder, +4 for message offset
@@ -120,6 +125,7 @@ func setErrorCode(buf *[]byte, errorCode uint16) {
 	tmpBytes := tmp.Bytes()
 	copy((*buf)[8:10], tmpBytes)
 }
+
 
 
 // ApiVersions Response (Version: 3) => error_code [api_keys] throttle_time_ms _tagged_fields 
