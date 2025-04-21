@@ -28,5 +28,6 @@ func main() {
 	}
 
 	// messageSize(4byte) | correlationID(4byte) | Body...
+	defer conn.Close()
 	conn.Write([]byte{1,1,1,1,0,0,0,7}) 
 }
