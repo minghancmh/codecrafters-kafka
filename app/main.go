@@ -142,7 +142,7 @@ func setAPIVersionsAPIKey(buf *[]byte, apiKey uint16, minVer uint16, maxVer uint
 	err := binary.Write(tmp, binary.BigEndian, apiKey)
 	err = binary.Write(tmp, binary.BigEndian, minVer)
 	err = binary.Write(tmp, binary.BigEndian, maxVer)
-	err = binary.Write(tmp, binary.BigEndian, 0)
+	err = binary.Write(tmp, binary.BigEndian, uint8(0))
 	if err != nil {
 		fmt.Println("Setting APIVersionsAPIKey failed: ", err)
 		return 0
