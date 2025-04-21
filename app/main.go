@@ -77,7 +77,7 @@ func main() {
 	currentMessageLength += 2
 	
 	// set the num_api_keys
-	response[currentMessageLength + 4] = 1
+	response[currentMessageLength + 4] = 0x2
 	currentMessageLength += 1
 
 	setAPIVersionsAPIKey(&response, 18, 0, 5, currentMessageLength + 4) // + 4 because of the message_size offset
