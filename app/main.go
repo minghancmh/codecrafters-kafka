@@ -39,6 +39,7 @@ func main() {
 	// 	6f 7f c6 61  // correlation_id:      1870644833		-> 4 byte
 
 	buf := make([]byte, 1024)
+	var currentMessageLength uint32 = 0
 
 
 	_, err = conn.Read(buf)
@@ -58,8 +59,7 @@ func main() {
 
 	setMessageSize(&response, 3735928559) // DEADBEEF for placeholder
 	setCorrelationId(&response, corrID)
-
-	fmt.Printf("response: %x\n", response)
+	currentMessageLength += 4 // correlationID is 4 bytes
 
 
 
@@ -67,9 +67,16 @@ func main() {
 	if requestAPIVersion > 4 {
 		fmt.Printf("Requested API Version not supported: %d\n", requestAPIVersion)
 		setErrorCode(&response, UNSUPPORTED_VERSION)
+		currentMessageLength += 2 // error codes are 2 bytes
+		setMessageSize(&response, uint32(currentMessageLength))
 		conn.Write(response)
 		os.Exit(1)
 	}
+
+	setErrorCode(&response, 0) // no error
+	currentMessageLength += 2
+	setAPIVersionsAPIKey(&response, 18, 0, 5, currentMessageLength + 4) // + 4 because of the message_size offset
+	setMessageSize(&response, currentMessageLength)
 
 
 	// messageSize(4byte) | correlationID(4byte) | Body...
@@ -109,5 +116,31 @@ func setErrorCode(buf *[]byte, errorCode uint16) {
 	}
 	tmpBytes := tmp.Bytes()
 	copy((*buf)[8:10], tmpBytes)
+}
+
+
+// ApiVersions Response (Version: 3) => error_code [api_keys] throttle_time_ms _tagged_fields 
+//   error_code => INT16
+//   api_keys => api_key min_version max_version _tagged_fields 
+//     api_key => INT16
+//     min_version => INT16
+//     max_version => INT16
+//   throttle_time_ms => INT32
+func setAPIVersionsAPIKey(buf *[]byte, apiKey uint16, minVer uint16, maxVer uint16, offset uint32){
+	tmp := new(bytes.Buffer)
+
+
+	err := binary.Write(tmp, binary.BigEndian, apiKey)
+	err = binary.Write(tmp, binary.BigEndian, minVer)
+	err = binary.Write(tmp, binary.BigEndian, maxVer)
+	if err != nil {
+		fmt.Println("Setting APIVersionsAPIKey failed: ", err)
+		return
+	}
+
+	tmpBytes := tmp.Bytes()
+	
+	
+	copy((*buf)[offset: offset+6], tmpBytes)
 }
 
