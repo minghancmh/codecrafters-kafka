@@ -77,6 +77,8 @@ func main() {
 	currentMessageLength += 2
 	setAPIVersionsAPIKey(&response, 18, 0, 5, currentMessageLength + 4) // + 4 because of the message_size offset
 	currentMessageLength += 6
+	setThrottleTime(&response, 3735928559, currentMessageLength + 4) // DEADBEEF for placeholder
+	currentMessageLength += 4
 	setMessageSize(&response, currentMessageLength)
 
 
@@ -127,7 +129,7 @@ func setErrorCode(buf *[]byte, errorCode uint16) {
 //     min_version => INT16
 //     max_version => INT16
 //   throttle_time_ms => INT32
-func setAPIVersionsAPIKey(buf *[]byte, apiKey uint16, minVer uint16, maxVer uint16, offset uint32){
+func setAPIVersionsAPIKey(buf *[]byte, apiKey uint16, minVer uint16, maxVer uint16, offset uint32) uint32{
 	tmp := new(bytes.Buffer)
 
 
@@ -136,12 +138,28 @@ func setAPIVersionsAPIKey(buf *[]byte, apiKey uint16, minVer uint16, maxVer uint
 	err = binary.Write(tmp, binary.BigEndian, maxVer)
 	if err != nil {
 		fmt.Println("Setting APIVersionsAPIKey failed: ", err)
-		return
+		return 0
 	}
 
 	tmpBytes := tmp.Bytes()
 	
 	
 	copy((*buf)[offset: offset+6], tmpBytes)
+	return 6
+}
+
+func setThrottleTime(buf *[]byte, throttleTime uint32, offset uint32) uint32 {
+	tmp := new(bytes.Buffer)
+	err := binary.Write(tmp, binary.BigEndian, throttleTime)
+	if err != nil {
+		fmt.Println("Setting ThrottleTime failed: ", err)
+		return 0
+	}
+
+	tmpBytes := tmp.Bytes()
+	
+	
+	copy((*buf)[offset: offset+4], tmpBytes)	
+	return 4
 }
 
