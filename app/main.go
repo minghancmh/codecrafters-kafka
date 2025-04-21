@@ -76,6 +76,7 @@ func main() {
 	setErrorCode(&response, 0) // no error
 	currentMessageLength += 2
 	setAPIVersionsAPIKey(&response, 18, 0, 5, currentMessageLength + 4) // + 4 because of the message_size offset
+	currentMessageLength += 6
 	setMessageSize(&response, currentMessageLength)
 
 
