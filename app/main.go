@@ -73,11 +73,11 @@ func main() {
 		os.Exit(1)
 	}
 
-	setErrorCode(&response, 0) // no error
+	setErrorCode(&response, 2) // no error
 	currentMessageLength += 2
 	setAPIVersionsAPIKey(&response, 18, 0, 5, currentMessageLength + 4) // + 4 because of the message_size offset
 	currentMessageLength += 6
-	setThrottleTime(&response, 3735928559, currentMessageLength + 4) // DEADBEEF for placeholder
+	setThrottleTime(&response, 3735928559, currentMessageLength + 4) // DEADBEEF for placeholder, +4 for message offset
 	currentMessageLength += 4
 	setMessageSize(&response, currentMessageLength)
 
