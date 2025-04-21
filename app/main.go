@@ -82,8 +82,8 @@ func main() {
 
 	setAPIVersionsAPIKey(&response, 18, 0, 5, currentMessageLength + 4) // + 4 because of the message_size offset
 	currentMessageLength += 6
-	setThrottleTime(&response, 3735928559, currentMessageLength + 4) // DEADBEEF for placeholder, +4 for message offset
-	currentMessageLength += 4
+	// setThrottleTime(&response, 3735928559, currentMessageLength + 4) // DEADBEEF for placeholder, +4 for message offset
+	// currentMessageLength += 4
 	setMessageSize(&response, currentMessageLength)
 
 
