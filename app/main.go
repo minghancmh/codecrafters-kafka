@@ -95,11 +95,13 @@ func main() {
 
 	// messageSize(4byte) | correlationID(4byte) | Body...
 	defer conn.Close() // we need to close the connection after function exit
-	conn.Write(response)
+	nbytes, err := conn.Write(response)
+	fmt.Println("nbytes written first:", nbytes)
 	newbuf:= make([]byte, 1024)
 	_, err = conn.Read(newbuf)
 	fmt.Println("newbuf:", newbuf)
-	conn.Write(response)
+	nbytes, err = conn.Write(response)
+	fmt.Println("nbytes writteN:", nbytes)
 
 }
 
