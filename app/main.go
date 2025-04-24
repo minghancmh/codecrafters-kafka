@@ -97,12 +97,12 @@ func main() {
 	defer conn.Close() // we need to close the connection after function exit
 	nbytes, err := conn.Write(response)
 	fmt.Println("nbytes written first:", nbytes)
-	// newbuf:= make([]byte, 1024)
-	// _, err = conn.Read(newbuf)
-	// if err != nil {
-	// 	fmt.Println("read err:", err)
-	// }
-	// fmt.Println("newbuf:", newbuf)
+	newbuf:= make([]byte, 1024)
+	_, err = conn.Read(newbuf)
+	if err != nil {
+		fmt.Println("read err:", err)
+	}
+	fmt.Println("newbuf:", newbuf)
 	nbytes, err = conn.Write(response)
 	if err != nil {
 		fmt.Println("write err:", err)
