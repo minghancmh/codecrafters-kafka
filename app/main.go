@@ -96,9 +96,10 @@ func main() {
 	// messageSize(4byte) | correlationID(4byte) | Body...
 	defer conn.Close() // we need to close the connection after function exit
 	conn.Write(response)
-	newbuf := make([]byte, 1024)
-	readagain, _ := conn.Read(newbuf)
-	fmt.Println("readagain:", readagain)
+	newbuf:= make([]byte, 1024)
+	_, err = conn.Read(newbuf)
+	fmt.Println("newbuf:", newbuf)
+
 }
 
 func setMessageSize(buf *[]byte, msgSize uint32) {
