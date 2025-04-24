@@ -99,6 +99,7 @@ func main() {
 	newbuf:= make([]byte, 1024)
 	_, err = conn.Read(newbuf)
 	fmt.Println("newbuf:", newbuf)
+	conn.Write(response)
 
 }
 
