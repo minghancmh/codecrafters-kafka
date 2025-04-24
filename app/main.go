@@ -1,11 +1,12 @@
 package main
 
 import (
+	"bytes"
+	"encoding/binary"
 	"fmt"
 	"net"
 	"os"
-	"encoding/binary"
-	"bytes"
+	"time"
 )
 
 // Ensures gofmt doesn't remove the "net" and "os" imports in stage 1 (feel free to remove this!)
@@ -26,11 +27,11 @@ func main() {
 		os.Exit(1)
 	}
 	conn, err := l.Accept()
+	conn.SetReadDeadline(time.Now().Add(5 * time.Second))
 	if err != nil {
 		fmt.Println("Error accepting connection: ", err.Error())
 		os.Exit(1)
 	}
-
 
 	// Example request message (all in big endian)
 	//	00 00 00 23  // message_size:        35 			-> 4 byte
@@ -41,7 +42,6 @@ func main() {
 	buf := make([]byte, 1024)
 	var currentMessageLength uint32 = 0
 
-
 	_, err = conn.Read(buf)
 	if err != nil {
 		fmt.Println("read err:", err)
@@ -50,9 +50,9 @@ func main() {
 	fmt.Printf("request: %s\n", buf)
 
 	// parse the message
-	// message_size :=  binary.BigEndian.Uint32(buf[0:4])	
+	// message_size :=  binary.BigEndian.Uint32(buf[0:4])
 	// requestAPIKey := binary.BigEndian.Uint16(buf[4:6])
-	requestAPIVersion :=  binary.BigEndian.Uint16(buf[6:8])
+	requestAPIVersion := binary.BigEndian.Uint16(buf[6:8])
 	corrID := binary.BigEndian.Uint32(buf[8:12])
 
 	response := make([]byte, 1024)
@@ -60,9 +60,6 @@ func main() {
 	setMessageSize(&response, 3735928559) // DEADBEEF for placeholder
 	setCorrelationId(&response, corrID)
 	currentMessageLength += 4 // correlationID is 4 bytes
-
-
-
 
 	if requestAPIVersion > 4 {
 		fmt.Printf("Requested API Version not supported: %d\n", requestAPIVersion)
@@ -75,34 +72,33 @@ func main() {
 
 	setErrorCode(&response, 0) // no error
 	currentMessageLength += 2
-	
+
 	// set the num_api_keys
-	response[currentMessageLength + 4] = 0x2
+	response[currentMessageLength+4] = 0x2
 	currentMessageLength += 1
 
-	setAPIVersionsAPIKey(&response, 18, 0, 5, currentMessageLength + 4) // + 4 because of the message_size offset
+	setAPIVersionsAPIKey(&response, 18, 0, 5, currentMessageLength+4) // + 4 because of the message_size offset
 	currentMessageLength += 7
-	setThrottleTime(&response, 3735928559, currentMessageLength + 4) // DEADBEEF for placeholder, +4 for message offset
+	setThrottleTime(&response, 3735928559, currentMessageLength+4) // DEADBEEF for placeholder, +4 for message offset
 	currentMessageLength += 4
 
 	// set the tag buffer
-	response[currentMessageLength + 4] = 0x0
+	response[currentMessageLength+4] = 0x0
 	currentMessageLength += 1
 
-
 	setMessageSize(&response, currentMessageLength)
-
 
 	// messageSize(4byte) | correlationID(4byte) | Body...
 	defer conn.Close() // we need to close the connection after function exit
 	nbytes, err := conn.Write(response)
 	fmt.Println("nbytes written first:", nbytes)
-	newbuf:= make([]byte, 1024)
+	newbuf := make([]byte, 1024)
 	_, err = conn.Read(newbuf)
 	if err != nil {
 		fmt.Println("read err:", err)
 	}
 	fmt.Println("newbuf:", newbuf)
+	fmt.Println("new response writing.")
 	nbytes, err = conn.Write(response)
 	if err != nil {
 		fmt.Println("write err:", err)
@@ -145,19 +141,17 @@ func setErrorCode(buf *[]byte, errorCode uint16) {
 	copy((*buf)[8:10], tmpBytes)
 }
 
-
-
-// ApiVersions Response (Version: 3) => error_code [api_keys] throttle_time_ms _tagged_fields 
-//   error_code => INT16
-//   num_api_keys => byte (0x1 for 0 api_keys, 0x2 for 1 api_key, 0x3 for 2 api_key ... )
-//   api_keys => api_key min_version max_version _tagged_fields (_tagged_fields need to set to 0x0 even if not used)
-//     api_key => INT16
-//     min_version => INT16
-//     max_version => INT16
-//   throttle_time_ms => INT32
-func setAPIVersionsAPIKey(buf *[]byte, apiKey uint16, minVer uint16, maxVer uint16, offset uint32) uint32{
+// ApiVersions Response (Version: 3) => error_code [api_keys] throttle_time_ms _tagged_fields
+//
+//	error_code => INT16
+//	num_api_keys => byte (0x1 for 0 api_keys, 0x2 for 1 api_key, 0x3 for 2 api_key ... )
+//	api_keys => api_key min_version max_version _tagged_fields (_tagged_fields need to set to 0x0 even if not used)
+//	  api_key => INT16
+//	  min_version => INT16
+//	  max_version => INT16
+//	throttle_time_ms => INT32
+func setAPIVersionsAPIKey(buf *[]byte, apiKey uint16, minVer uint16, maxVer uint16, offset uint32) uint32 {
 	tmp := new(bytes.Buffer)
-
 
 	err := binary.Write(tmp, binary.BigEndian, apiKey)
 	err = binary.Write(tmp, binary.BigEndian, minVer)
@@ -169,9 +163,8 @@ func setAPIVersionsAPIKey(buf *[]byte, apiKey uint16, minVer uint16, maxVer uint
 	}
 
 	tmpBytes := tmp.Bytes()
-	
-	
-	copy((*buf)[offset: offset+7], tmpBytes)
+
+	copy((*buf)[offset:offset+7], tmpBytes)
 	return 7
 }
 
@@ -184,9 +177,7 @@ func setThrottleTime(buf *[]byte, throttleTime uint32, offset uint32) uint32 {
 	}
 
 	tmpBytes := tmp.Bytes()
-	
-	
-	copy((*buf)[offset: offset+4], tmpBytes)	
+
+	copy((*buf)[offset:offset+4], tmpBytes)
 	return 4
 }
-
