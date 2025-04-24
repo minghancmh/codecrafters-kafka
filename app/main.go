@@ -90,7 +90,7 @@ func main() {
 
 	// messageSize(4byte) | correlationID(4byte) | Body...
 	defer conn.Close() // we need to close the connection after function exit
-	nbytes, err := conn.Write(response)
+	nbytes, err := conn.Write(response[:currentMessageLength+4])
 	fmt.Println("nbytes written first:", nbytes)
 	newbuf := make([]byte, 1024)
 	_, err = conn.Read(newbuf)
@@ -99,7 +99,7 @@ func main() {
 	}
 	fmt.Println("newbuf:", newbuf)
 	fmt.Println("new response writing.")
-	nbytes, err = conn.Write(response)
+	nbytes, err = conn.Write(response[:currentMessageLength+4])
 	if err != nil {
 		fmt.Println("write err:", err)
 	}
