@@ -99,8 +99,14 @@ func main() {
 	fmt.Println("nbytes written first:", nbytes)
 	newbuf:= make([]byte, 1024)
 	_, err = conn.Read(newbuf)
+	if err != nil {
+		fmt.Println("read err:", err)
+	}
 	fmt.Println("newbuf:", newbuf)
 	nbytes, err = conn.Write(response)
+	if err != nil {
+		fmt.Println("write err:", err)
+	}
 	fmt.Println("nbytes writteN:", nbytes)
 
 }
