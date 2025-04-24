@@ -40,70 +40,64 @@ func main() {
 	// 	6f 7f c6 61  // correlation_id:      1870644833		-> 4 byte
 
 	buf := make([]byte, 1024)
-	var currentMessageLength uint32 = 0
+	for {
+		var currentMessageLength uint32 = 0
 
-	_, err = conn.Read(buf)
-	if err != nil {
-		fmt.Println("read err:", err)
-		os.Exit(1)
+		_, err = conn.Read(buf)
+		if err != nil {
+			fmt.Println("read err:", err)
+			os.Exit(1)
+		}
+		fmt.Printf("request: %s\n", buf)
+
+		// parse the message
+		// message_size :=  binary.BigEndian.Uint32(buf[0:4])
+		// requestAPIKey := binary.BigEndian.Uint16(buf[4:6])
+		requestAPIVersion := binary.BigEndian.Uint16(buf[6:8])
+		corrID := binary.BigEndian.Uint32(buf[8:12])
+
+		response := make([]byte, 1024)
+
+		setMessageSize(&response, 3735928559) // DEADBEEF for placeholder
+		setCorrelationId(&response, corrID)
+		currentMessageLength += 4 // correlationID is 4 bytes
+
+		if requestAPIVersion > 4 {
+			fmt.Printf("Requested API Version not supported: %d\n", requestAPIVersion)
+			setErrorCode(&response, UNSUPPORTED_VERSION)
+			currentMessageLength += 2 // error codes are 2 bytes
+			setMessageSize(&response, uint32(currentMessageLength))
+			conn.Write(response)
+			os.Exit(1)
+		}
+
+		setErrorCode(&response, 0) // no error
+		currentMessageLength += 2
+
+		// set the num_api_keys
+		response[currentMessageLength+4] = 0x2
+		currentMessageLength += 1
+
+		setAPIVersionsAPIKey(&response, 18, 0, 5, currentMessageLength+4) // + 4 because of the message_size offset
+		currentMessageLength += 7
+		setThrottleTime(&response, 3735928559, currentMessageLength+4) // DEADBEEF for placeholder, +4 for message offset
+		currentMessageLength += 4
+
+		// set the tag buffer
+		response[currentMessageLength+4] = 0x0
+		currentMessageLength += 1
+
+		setMessageSize(&response, currentMessageLength)
+
+		// messageSize(4byte) | correlationID(4byte) | Body...
+		defer conn.Close() // we need to close the connection after function exit
+		nbytes, err := conn.Write(response[:currentMessageLength+4])
+		if err != nil {
+			fmt.Println("Error writing response:", err)
+			os.Exit(1)
+		}
+		fmt.Printf("Num Bytes Written: %v\n", nbytes)
 	}
-	fmt.Printf("request: %s\n", buf)
-
-	// parse the message
-	// message_size :=  binary.BigEndian.Uint32(buf[0:4])
-	// requestAPIKey := binary.BigEndian.Uint16(buf[4:6])
-	requestAPIVersion := binary.BigEndian.Uint16(buf[6:8])
-	corrID := binary.BigEndian.Uint32(buf[8:12])
-
-	response := make([]byte, 1024)
-
-	setMessageSize(&response, 3735928559) // DEADBEEF for placeholder
-	setCorrelationId(&response, corrID)
-	currentMessageLength += 4 // correlationID is 4 bytes
-
-	if requestAPIVersion > 4 {
-		fmt.Printf("Requested API Version not supported: %d\n", requestAPIVersion)
-		setErrorCode(&response, UNSUPPORTED_VERSION)
-		currentMessageLength += 2 // error codes are 2 bytes
-		setMessageSize(&response, uint32(currentMessageLength))
-		conn.Write(response)
-		os.Exit(1)
-	}
-
-	setErrorCode(&response, 0) // no error
-	currentMessageLength += 2
-
-	// set the num_api_keys
-	response[currentMessageLength+4] = 0x2
-	currentMessageLength += 1
-
-	setAPIVersionsAPIKey(&response, 18, 0, 5, currentMessageLength+4) // + 4 because of the message_size offset
-	currentMessageLength += 7
-	setThrottleTime(&response, 3735928559, currentMessageLength+4) // DEADBEEF for placeholder, +4 for message offset
-	currentMessageLength += 4
-
-	// set the tag buffer
-	response[currentMessageLength+4] = 0x0
-	currentMessageLength += 1
-
-	setMessageSize(&response, currentMessageLength)
-
-	// messageSize(4byte) | correlationID(4byte) | Body...
-	defer conn.Close() // we need to close the connection after function exit
-	nbytes, err := conn.Write(response[:currentMessageLength+4])
-	fmt.Println("nbytes written first:", nbytes)
-	newbuf := make([]byte, 1024)
-	_, err = conn.Read(newbuf)
-	if err != nil {
-		fmt.Println("read err:", err)
-	}
-	fmt.Println("newbuf:", newbuf)
-	fmt.Println("new response writing.")
-	nbytes, err = conn.Write(response[:currentMessageLength+4])
-	if err != nil {
-		fmt.Println("write err:", err)
-	}
-	fmt.Println("nbytes writteN:", nbytes)
 
 }
 
