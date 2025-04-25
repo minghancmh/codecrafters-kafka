@@ -83,8 +83,17 @@ func handleConnection(conn net.Conn) {
 		response[currentMessageLength+4] = 0x2
 		currentMessageLength += 1
 
-		setAPIVersionsAPIKey(&response, 18, 0, 5, currentMessageLength+4) // + 4 because of the message_size offset
+		// API Key 18 (APIVersions)
+		// MinVersion: >= 0
+		// MaxVersion: >= 4
+		setAPIKey(&response, 18, 0, 5, currentMessageLength+4) // + 4 because of the message_size offset
 		currentMessageLength += 7
+
+		// API Key 75 (DescribeTopicPartitions)
+		// MinVersion: >= 0
+		// MaxVersion: >= 0
+		setAPIKey(&response, 75, 0, 0, currentMessageLength+4)
+
 		setThrottleTime(&response, 3735928559, currentMessageLength+4) // DEADBEEF for placeholder, +4 for message offset
 		currentMessageLength += 4
 
@@ -148,7 +157,7 @@ func setErrorCode(buf *[]byte, errorCode uint16) {
 //	  min_version => INT16
 //	  max_version => INT16
 //	throttle_time_ms => INT32
-func setAPIVersionsAPIKey(buf *[]byte, apiKey uint16, minVer uint16, maxVer uint16, offset uint32) uint32 {
+func setAPIKey(buf *[]byte, apiKey uint16, minVer uint16, maxVer uint16, offset uint32) uint32 {
 	tmp := new(bytes.Buffer)
 
 	err := binary.Write(tmp, binary.BigEndian, apiKey)
