@@ -93,7 +93,9 @@ func handleConnection(conn net.Conn) {
 		// MinVersion: >= 0
 		// MaxVersion: >= 0
 		setAPIKey(&response, 75, 0, 0, currentMessageLength+4)
+		currentMessageLength += 7
 
+	
 		setThrottleTime(&response, 3735928559, currentMessageLength+4) // DEADBEEF for placeholder, +4 for message offset
 		currentMessageLength += 4
 
