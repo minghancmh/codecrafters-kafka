@@ -200,7 +200,7 @@ func handleConnection(conn net.Conn) {
 			response[responseOffset] = 0
 			responseOffset += 1
 
-			setMessageSize(&response, responseOffset-8)
+			setMessageSize(&response, responseOffset - 4)
 
 			// messageSize(4byte) | correlationID(4byte) | Body...
 			defer conn.Close() // we need to close the connection after function exit
