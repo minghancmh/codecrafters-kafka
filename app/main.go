@@ -26,13 +26,18 @@ func main() {
 		fmt.Println("Failed to bind to port 9092")
 		os.Exit(1)
 	}
-	conn, err := l.Accept()
-
-	if err != nil {
-		fmt.Println("Error accepting connection: ", err.Error())
-		os.Exit(1)
+	for {
+		conn, err := l.Accept()
+		if err != nil {
+			fmt.Println("Error accepting connection: ", err.Error())
+			os.Exit(1)
+		}
+		go handleConnection(conn)
 	}
 
+}
+
+func handleConnection(conn net.Conn) {
 	// Example request message (all in big endian)
 	//	00 00 00 23  // message_size:        35 			-> 4 byte
 	//	00 12        // request_api_key:     18				-> 2 byte
@@ -43,7 +48,7 @@ func main() {
 	for {
 		var currentMessageLength uint32 = 0
 
-		_, err = conn.Read(buf)
+		_, err := conn.Read(buf)
 		if err != nil {
 			fmt.Println("read err:", err)
 			os.Exit(1)
@@ -98,7 +103,6 @@ func main() {
 		}
 		fmt.Printf("Num Bytes Written: %v\n", nbytes)
 	}
-
 }
 
 func setMessageSize(buf *[]byte, msgSize uint32) {
