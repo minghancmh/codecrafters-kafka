@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"net"
 	"os"
-	"time"
+	// "time"
 )
 
 // Ensures gofmt doesn't remove the "net" and "os" imports in stage 1 (feel free to remove this!)
@@ -27,7 +27,7 @@ func main() {
 		os.Exit(1)
 	}
 	conn, err := l.Accept()
-	conn.SetReadDeadline(time.Now().Add(5 * time.Second))
+
 	if err != nil {
 		fmt.Println("Error accepting connection: ", err.Error())
 		os.Exit(1)
@@ -174,4 +174,10 @@ func setThrottleTime(buf *[]byte, throttleTime uint32, offset uint32) uint32 {
 
 	copy((*buf)[offset:offset+4], tmpBytes)
 	return 4
+}
+
+func setEnd(buf *[]byte, offset uint32) uint32 {
+	tmp := []byte{0xd, 0xe, 0xa, 0xd, 0xd, 0xe, 0xa, 0xd} // end delimiter for easier debugging
+	copy((*buf)[offset:offset+8], tmp)
+	return 8
 }
