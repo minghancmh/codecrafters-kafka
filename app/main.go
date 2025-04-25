@@ -64,40 +64,33 @@ func handleConnection(conn net.Conn) {
 		response := make([]byte, 1024)
 
 		setMessageSize(&response, 3735928559) // DEADBEEF for placeholder
-		setCorrelationId(&response, corrID)
-		currentMessageLength += 4 // correlationID is 4 bytes
+		currentMessageLength += setCorrelationId(&response, corrID)
 
 		if requestAPIVersion > 4 {
 			fmt.Printf("Requested API Version not supported: %d\n", requestAPIVersion)
-			setErrorCode(&response, UNSUPPORTED_VERSION)
-			currentMessageLength += 2 // error codes are 2 bytes
+			currentMessageLength += setErrorCode(&response, UNSUPPORTED_VERSION)
 			setMessageSize(&response, uint32(currentMessageLength))
 			conn.Write(response)
 			os.Exit(1)
 		}
 
-		setErrorCode(&response, 0) // no error
-		currentMessageLength += 2
+		currentMessageLength += setErrorCode(&response, 0) // no error
 
-		// set the num_api_keys
+		// Set the num_api_keys
 		response[currentMessageLength+4] = 0x3
 		currentMessageLength += 1
 
 		// API Key 18 (APIVersions)
 		// MinVersion: >= 0
 		// MaxVersion: >= 4
-		setAPIKey(&response, 18, 0, 5, currentMessageLength+4) // + 4 because of the message_size offset
-		currentMessageLength += 7
+		currentMessageLength += setAPIKey(&response, 18, 0, 5, currentMessageLength+4) // + 4 because of the message_size offset
 
 		// API Key 75 (DescribeTopicPartitions)
 		// MinVersion: >= 0
 		// MaxVersion: >= 0
-		setAPIKey(&response, 75, 0, 0, currentMessageLength+4)
-		currentMessageLength += 7
+		currentMessageLength += setAPIKey(&response, 75, 0, 0, currentMessageLength+4)
 
-	
-		setThrottleTime(&response, 3735928559, currentMessageLength+4) // DEADBEEF for placeholder, +4 for message offset
-		currentMessageLength += 4
+		currentMessageLength += setThrottleTime(&response, 3735928559, currentMessageLength+4) // DEADBEEF for placeholder, +4 for message offset
 
 		// set the tag buffer
 		response[currentMessageLength+4] = 0x0
@@ -116,38 +109,40 @@ func handleConnection(conn net.Conn) {
 	}
 }
 
-func setMessageSize(buf *[]byte, msgSize uint32) {
+func setMessageSize(buf *[]byte, msgSize uint32) uint32 {
 	tmp := new(bytes.Buffer)
 	err := binary.Write(tmp, binary.BigEndian, msgSize)
 	if err != nil {
 		fmt.Println("Setting msg size failed: ", err)
-		return
+		return 0
 	}
 	tmpBytes := tmp.Bytes()
 	copy((*buf)[0:4], tmpBytes)
-	return
+	return 4
 }
 
-func setCorrelationId(buf *[]byte, corrId uint32) {
+func setCorrelationId(buf *[]byte, corrId uint32) uint32 {
 	tmp := new(bytes.Buffer)
 	err := binary.Write(tmp, binary.BigEndian, corrId)
 	if err != nil {
 		fmt.Println("Setting correlation ID failed: ", err)
-		return
+		return 0
 	}
 	tmpBytes := tmp.Bytes()
 	copy((*buf)[4:8], tmpBytes)
+	return 4
 }
 
-func setErrorCode(buf *[]byte, errorCode uint16) {
+func setErrorCode(buf *[]byte, errorCode uint16) uint32 {
 	tmp := new(bytes.Buffer)
 	err := binary.Write(tmp, binary.BigEndian, errorCode)
 	if err != nil {
 		fmt.Println("Setting error code failed: ", err)
-		return
+		return 0
 	}
 	tmpBytes := tmp.Bytes()
 	copy((*buf)[8:10], tmpBytes)
+	return 2
 }
 
 // ApiVersions Response (Version: 3) => error_code [api_keys] throttle_time_ms _tagged_fields
