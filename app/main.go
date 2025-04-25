@@ -193,6 +193,8 @@ func handleConnection(conn net.Conn) {
 			response[responseOffset] = 0
 			responseOffset += 1
 
+			setMessageSize(&response, responseOffset - 4)
+
 			conn.Write(response[:responseOffset])
 
 			continue
