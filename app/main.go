@@ -126,6 +126,7 @@ func handleConnection(conn net.Conn) {
 
 			for i := 0; i < topicsArrLength; i++ {
 				topicNameLength := int(buf[offset]) - 1
+				offset += 1
 				topicByteArr := make([]byte, topicNameLength)
 				copy(topicByteArr[:], buf[offset:offset+uint16(topicNameLength)])
 				offset += uint16(topicNameLength) + 1 // take care of the tag buffer
