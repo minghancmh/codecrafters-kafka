@@ -195,9 +195,9 @@ func handleConnection(conn net.Conn) {
 
 			setMessageSize(&response, responseOffset - 4)
 
-			conn.Write(response[:responseOffset])
+			// conn.Write(response[:responseOffset])
+			currentMessageLength = responseOffset - 4
 
-			continue
 		default:
 			fmt.Println("Unsupported case")
 		}
