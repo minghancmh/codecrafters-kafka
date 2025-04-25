@@ -186,6 +186,7 @@ func handleConnection(conn net.Conn) {
 			responseOffset += 1
 
 			response[responseOffset] = 0x1 // length of partitions array set to 0
+			responseOffset += 1
 
 			topicAuthorizedOperations := [4]byte{0x0, 0x0, 0xd, 0xf8} // refer to https://binspec.org/kafka-describe-topic-partitions-response-v0-unknown-topic?highlight=38-41
 			copy(response[responseOffset:responseOffset+4], topicAuthorizedOperations[:])
