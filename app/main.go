@@ -142,6 +142,8 @@ func handleConnection(conn net.Conn) {
 
 			// havent parsed cursor
 
+			fmt.Println("request:", req)
+
 			// formatting the response
 			response := make([]byte, 1024)
 			setMessageSize(&response, 41) // the response for DescribeTopicPartitions is always 41 bytes long
