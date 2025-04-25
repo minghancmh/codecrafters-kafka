@@ -80,7 +80,7 @@ func handleConnection(conn net.Conn) {
 		currentMessageLength += 2
 
 		// set the num_api_keys
-		response[currentMessageLength+4] = 0x2
+		response[currentMessageLength+4] = 0x3
 		currentMessageLength += 1
 
 		// API Key 18 (APIVersions)
