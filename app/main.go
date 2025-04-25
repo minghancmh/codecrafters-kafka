@@ -110,6 +110,13 @@ func handleConnection(conn net.Conn) {
 			currentMessageLength += 1
 
 			setMessageSize(&response, currentMessageLength)
+			defer conn.Close() // we need to close the connection after function exit
+			nbytes, err := conn.Write(response[:currentMessageLength + 4])
+			if err != nil {
+				fmt.Println("Error writing response:", err)
+				os.Exit(1)
+			}
+			fmt.Printf("Num Bytes Written: %v\n", nbytes)
 
 		case DESCRIBE_TOPIC_PARTITIONS:
 			// parsing the request
@@ -193,23 +200,21 @@ func handleConnection(conn net.Conn) {
 			response[responseOffset] = 0
 			responseOffset += 1
 
-			setMessageSize(&response, responseOffset - 4)
+			setMessageSize(&response, responseOffset-4)
 
-			// conn.Write(response[:responseOffset])
-			currentMessageLength = responseOffset - 4
+			// messageSize(4byte) | correlationID(4byte) | Body...
+			defer conn.Close() // we need to close the connection after function exit
+			nbytes, err := conn.Write(response[:responseOffset])
+			if err != nil {
+				fmt.Println("Error writing response:", err)
+				os.Exit(1)
+			}
+			fmt.Printf("Num Bytes Written: %v\n", nbytes)
 
 		default:
 			fmt.Println("Unsupported case")
 		}
 
-		// messageSize(4byte) | correlationID(4byte) | Body...
-		defer conn.Close() // we need to close the connection after function exit
-		nbytes, err := conn.Write(response[:currentMessageLength+4])
-		if err != nil {
-			fmt.Println("Error writing response:", err)
-			os.Exit(1)
-		}
-		fmt.Printf("Num Bytes Written: %v\n", nbytes)
 	}
 }
 
