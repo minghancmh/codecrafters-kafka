@@ -153,14 +153,14 @@ func handleConnection(conn net.Conn) {
 
 			responseOffset += setThrottleTime(&response, 0, responseOffset)
 
-			response[responseOffset] = byte(len(req.topics))
+			response[responseOffset] = byte(len(req.topics) + 1)
 			responseOffset += 1
 
 			responseOffset += setErrorCode(&response, UNKNOWN_TOPIC, responseOffset)
 
 			for i := 0; i < len(req.topics); i++ {
 				topicLength := len(req.topics[i].name)
-				response[responseOffset] = byte(topicLength) - 1
+				response[responseOffset] = byte(topicLength) + 1
 				responseOffset += 1
 				for _, char := range req.topics[i].name {
 					response[responseOffset] = byte(char)
