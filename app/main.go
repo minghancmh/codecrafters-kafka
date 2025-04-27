@@ -301,6 +301,7 @@ func getRecords(dat []byte, recordsLength uint32) []Record {
 		// parse the record
 		rec := new(Record)
 		offset += getRecord(dat[offset:], rec)
+		records = append(records, *rec)
 
 	}
 	return records
@@ -346,7 +347,7 @@ func getRecordValue(dat []byte) RecordValue {
 func parseTopicRecord(dat []byte, frameVer uint8) TopicRecord {
 	trPtr := new(TopicRecord)
 	tr := *trPtr
-	tr.frameVersion = tr.frameVersion
+	tr.frameVersion = frameVer
 	tr.recordType = 0x2
 	tr.version = dat[0]
 	tr.nameLength = dat[1]
