@@ -318,8 +318,9 @@ func getRecord(dat []byte, resPtr *Record) uint8 {
 	if res.keyLength != -1 { // TODO this might be wrong
 		res.key = make([]byte, res.keyLength)
 		copy(res.key[:], dat[4:4+res.keyLength])
+		fmt.Println("key:", res.key)
 	}
-	fmt.Println("passed")
+
 	res.valueLength = int8(dat[4+res.keyLength])
 	res.value = getRecordValue(dat[5+res.keyLength:])
 
