@@ -251,7 +251,7 @@ func getTopicByName(name string) TopicRecord {
 	if err != nil {
 		fmt.Println("Error reading file at path: ", path)
 	}
-	fmt.Printf("dat: %x", dat)
+	fmt.Println("dat: ", dat)
 	rb := readRecordBatch(dat, 0)
 
 	for _, rec := range rb.records {
