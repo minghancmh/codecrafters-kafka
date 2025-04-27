@@ -357,10 +357,11 @@ func getRecord(dat []byte, resPtr *Record) uint8 {
 	res.offsetDelta = dat[3]
 	res.keyLength = int8(dat[4])
 	fmt.Println("[getRecord]: length:", res.length)
+	fmt.Println("[getRecord]: attributes:", res.attributes)
 	fmt.Println("[getRecord]: timestampDelta:", res.timestampDelta)
 	fmt.Println("[getRecord]: offsetDelta:", res.offsetDelta)
 	fmt.Println("[getRecord]: keyLength:", res.keyLength)
-	
+
 	if res.keyLength != -1 { // TODO this might be wrong
 		res.key = make([]byte, res.keyLength)
 		copy(res.key[:], dat[5:5+res.keyLength])
