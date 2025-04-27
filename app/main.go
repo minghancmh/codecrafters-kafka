@@ -349,17 +349,21 @@ func getRecords(dat []byte, recordsLength uint32) []Record {
 }
 
 func getRecord(dat []byte, resPtr *Record) uint8 {
-
+	fmt.Println("[getRecord]: Getting Record")
 	res := *resPtr
 	res.length = dat[0]
 	res.timestampDelta = dat[1]
 	res.offsetDelta = dat[2]
 	res.keyLength = int8(dat[3])
-	fmt.Println("keylength:", res.keyLength)
+	fmt.Println("[getRecord]: length:", res.length)
+	fmt.Println("[getRecord]: timestampDelta:", res.timestampDelta)
+	fmt.Println("[getRecord]: offsetDelta:", res.offsetDelta)
+	fmt.Println("[getRecord]: keyLength:", res.keyLength)
+	
 	if res.keyLength != -1 { // TODO this might be wrong
 		res.key = make([]byte, res.keyLength)
 		copy(res.key[:], dat[4:4+res.keyLength])
-		fmt.Println("key:", res.key)
+		fmt.Println("[getRecord]: key:", res.key)
 	}
 
 	res.valueLength = int8(dat[4+res.keyLength])
