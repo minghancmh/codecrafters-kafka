@@ -373,6 +373,9 @@ func getRecord(dat []byte, resPtr *Record) uint8 {
 		res.value = getRecordValue(dat[6:])
 	}
 
+	res.headersArrayCount = dat[res.length]
+	fmt.Println("[getRecord]: headersArrayCount", res.headersArrayCount)
+
 	return res.length + 2 // to include the length field itself
 }
 
@@ -612,6 +615,7 @@ type Record struct {
 	key            []byte
 	valueLength    int8
 	value          RecordValue
+	headersArrayCount uint8
 }
 
 type TopicRecord struct {
