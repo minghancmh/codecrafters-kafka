@@ -362,14 +362,16 @@ func getRecord(dat []byte, resPtr *Record) uint8 {
 	fmt.Println("[getRecord]: offsetDelta:", res.offsetDelta)
 	fmt.Println("[getRecord]: keyLength:", res.keyLength)
 
-	if res.keyLength != -1 { // TODO this might be wrong
+	if res.keyLength != -1 {
 		res.key = make([]byte, res.keyLength)
 		copy(res.key[:], dat[5:5+res.keyLength])
 		fmt.Println("[getRecord]: key:", res.key)
+		res.valueLength = int8(dat[5+res.keyLength])
+		res.value = getRecordValue(dat[6+res.keyLength:])
+	} else {
+		res.valueLength = int8(dat[5])
+		res.value = getRecordValue(dat[6:])
 	}
-
-	res.valueLength = int8(dat[5+res.keyLength])
-	res.value = getRecordValue(dat[6+res.keyLength:])
 
 	return res.length + 2 // to include the length field itself
 }
@@ -493,7 +495,6 @@ func parseFeatureLevelRecord(dat []byte, frameVer uint8) FeatureLevelRecord {
 	fmt.Println("[parseFeatureLevelRecord]: name:", fl.name)
 	fmt.Println("[parseFeatureLevelRecord]: featureLevel:", fl.featureLevel)
 	fmt.Println("[parseFeatureLevelRecord]: taggedFieldsCount:", fl.taggedFieldsCount)
-
 
 	return fl
 
