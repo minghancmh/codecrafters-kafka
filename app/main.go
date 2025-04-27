@@ -111,7 +111,7 @@ func handleConnection(conn net.Conn) {
 
 			setMessageSize(&response, currentMessageLength)
 			defer conn.Close() // we need to close the connection after function exit
-			nbytes, err := conn.Write(response[:currentMessageLength + 4])
+			nbytes, err := conn.Write(response[:currentMessageLength+4])
 			if err != nil {
 				fmt.Println("Error writing response:", err)
 				os.Exit(1)
@@ -154,7 +154,6 @@ func handleConnection(conn net.Conn) {
 
 			// formatting the response
 			response := make([]byte, 1024)
-			setMessageSize(&response, 41) // the response for DescribeTopicPartitions is always 41 bytes long
 			var responseOffset uint32 = 4 // size of the message length
 			responseOffset += setCorrelationId(&response, corrID)
 
@@ -163,45 +162,45 @@ func handleConnection(conn net.Conn) {
 
 			responseOffset += setThrottleTime(&response, 0, responseOffset)
 
-			response[responseOffset] = byte(len(req.topics) + 1)
+			response[responseOffset] = byte(len(req.topics) + 1) // setting the length of the topics array
 			responseOffset += 1
 
 			responseOffset += setErrorCode(&response, UNKNOWN_TOPIC, responseOffset)
 
 			for i := 0; i < len(req.topics); i++ {
-				topicLength := len(req.topics[i].name)
-				response[responseOffset] = byte(topicLength) + 1
+				topicNameLength := len(req.topics[i].name)
+				topicRecord := getTopicByName(req.topics[i].name)
+				response[responseOffset] = byte(topicNameLength) + 1
 				responseOffset += 1
 				for _, char := range req.topics[i].name {
 					response[responseOffset] = byte(char)
 					responseOffset += 1
 				}
+				// topicId := [16]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0} // null id for now
+				copy(response[responseOffset:responseOffset+16], topicRecord.topicUUID[:])
+				responseOffset += 16
+
+				response[responseOffset] = 0 // is internal
+				responseOffset += 1
+
+				response[responseOffset] = 0x1 // length of partitions array set to 0
+				responseOffset += 1
+
+				topicAuthorizedOperations := [4]byte{0x0, 0x0, 0xd, 0xf8} // refer to https://binspec.org/kafka-describe-topic-partitions-response-v0-unknown-topic?highlight=38-41
+				copy(response[responseOffset:responseOffset+4], topicAuthorizedOperations[:])
+				responseOffset += 4
+
+				response[responseOffset] = 0 // tag buffer (topic)
+				responseOffset += 1
+
 			}
-
-			topicId := [16]byte{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0} // null id for now
-			copy(response[responseOffset:responseOffset+16], topicId[:])
-			responseOffset += 16
-
-			response[responseOffset] = 0 // is internal
-			responseOffset += 1
-
-			response[responseOffset] = 0x1 // length of partitions array set to 0
-			responseOffset += 1
-
-			topicAuthorizedOperations := [4]byte{0x0, 0x0, 0xd, 0xf8} // refer to https://binspec.org/kafka-describe-topic-partitions-response-v0-unknown-topic?highlight=38-41
-			copy(response[responseOffset:responseOffset+4], topicAuthorizedOperations[:])
-			responseOffset += 4
-
-			response[responseOffset] = 0 // tag buffer
-			responseOffset += 1
-
 			response[responseOffset] = 0xff // next cursor
 			responseOffset += 1
 
-			response[responseOffset] = 0
+			response[responseOffset] = 0 // tag buffer (DescribeTopicPartitions Response Body v0)
 			responseOffset += 1
 
-			setMessageSize(&response, responseOffset - 4)
+			setMessageSize(&response, responseOffset-4)
 
 			// messageSize(4byte) | correlationID(4byte) | Body...
 			defer conn.Close() // we need to close the connection after function exit
@@ -243,6 +242,165 @@ func setCorrelationId(buf *[]byte, corrId uint32) uint32 {
 	tmpBytes := tmp.Bytes()
 	copy((*buf)[4:8], tmpBytes)
 	return 4
+}
+
+// DescribeTopicPartitions Utils
+func getTopicByName(name string) TopicRecord {
+	path := "/tmp/kraft-combined-logs/__cluster_metadata-0/00000000000000000000.log"
+	dat, err := os.ReadFile(path)
+	if err != nil {
+		fmt.Println("Error reading file at path: ", path)
+	}
+	rb := readRecordBatch(dat, 0)
+
+	for _, rec := range rb.records {
+		val := rec.value
+		switch val.isRecordValue() {
+		case 0x2: // value record
+			tr := val.(TopicRecord)
+			if tr.topicName == name {
+				return tr
+			}
+
+		case 0x3: // partition record
+			// pr := val.(PartitionRecord)
+			fmt.Println("partition record parsing to be implemented")
+		default:
+			fmt.Println("no record type found")
+		}
+
+	}
+	return TopicRecord{}
+}
+
+func readRecordBatch(dat []byte, offset uint64) RecordBatch {
+	rb := new(RecordBatch)
+
+	rb.baseOffset = binary.BigEndian.Uint64(dat[offset : offset+8])
+	rb.batchLength = binary.BigEndian.Uint32(dat[offset+8 : offset+12])
+	rb.partitionLeaderEpoch = binary.BigEndian.Uint32(dat[offset+12 : offset+16])
+	rb.magicByte = dat[offset+16]
+	rb.crc = binary.BigEndian.Uint32(dat[offset+17 : offset+21])
+	rb.attributes = binary.BigEndian.Uint16(dat[offset+21 : offset+23])
+	rb.lastOffsetDelta = binary.BigEndian.Uint32(dat[offset+23 : offset+27])
+	rb.baseTimestamp = binary.BigEndian.Uint64(dat[offset+27 : offset+35])
+	rb.maxTimestamp = binary.BigEndian.Uint64(dat[offset+35 : offset+43])
+	rb.producerID = binary.BigEndian.Uint64(dat[offset+43 : offset+51])
+	rb.producerEpoch = binary.BigEndian.Uint16(dat[offset+51 : offset+53])
+	rb.baseSequence = binary.BigEndian.Uint32(dat[offset+53 : offset+57])
+	rb.recordsLength = binary.BigEndian.Uint32(dat[offset+57 : offset+61])
+	rb.records = getRecords(dat[offset+61:], rb.recordsLength)
+	return *rb
+}
+
+func getRecords(dat []byte, recordsLength uint32) []Record {
+	records := make([]Record, 0)
+	var i uint32 = 0
+	var offset uint8 = 0
+	for i < recordsLength {
+		// parse the record
+		rec := new(Record)
+		offset += getRecord(dat[offset:], rec)
+
+	}
+	return records
+
+}
+
+func getRecord(dat []byte, resPtr *Record) uint8 {
+
+	res := *resPtr
+	res.length = dat[0]
+	res.timestampDelta = dat[1]
+	res.offsetDelta = dat[2]
+	res.keyLength = int8(dat[3])
+	if res.keyLength != -1 { // TODO this might be wrong
+		res.key = make([]byte, res.keyLength)
+		copy(res.key[:], dat[4:4+res.keyLength])
+	}
+	res.valueLength = int8(dat[4+res.keyLength])
+	res.value = getRecordValue(dat[5+res.keyLength:])
+
+	return res.length
+}
+
+func getRecordValue(dat []byte) RecordValue {
+
+	frameVer := dat[0]
+	recordType := dat[1]
+
+	switch recordType {
+	case 0x2: // topic record
+		return parseTopicRecord(dat[2:], frameVer)
+	case 0x3: // partitionRecord
+		return parsePartitionRecord(dat[2:], frameVer)
+	default:
+		return nil
+	}
+
+}
+
+func parseTopicRecord(dat []byte, frameVer uint8) TopicRecord {
+	trPtr := new(TopicRecord)
+	tr := *trPtr
+	tr.frameVersion = tr.frameVersion
+	tr.recordType = 0x2
+	tr.version = dat[0]
+	tr.nameLength = dat[1]
+	tr.topicName = string(dat[2 : 2+tr.nameLength-1])
+	copy(tr.topicUUID[:], dat[2+tr.nameLength-1:18+tr.nameLength-1])
+	tr.taggedFieldsCount = dat[18+tr.nameLength-1]
+	return tr
+}
+
+func parsePartitionRecord(dat []byte, frameVer uint8) PartitionRecord {
+	prPtr := new(PartitionRecord)
+	pr := *prPtr
+	pr.frameVersion = frameVer
+	pr.recordType = 0x3
+	pr.version = dat[0]
+	pr.partitionID = binary.BigEndian.Uint32(dat[1:5])
+	copy(pr.topicUUID[:], dat[5:21])
+	pr.lenReplicaArray = dat[21]
+	pr.replicaArray = make([]uint32, 0)
+	for i := 0; i < int(pr.lenReplicaArray)-1; i++ {
+		pr.replicaArray = append(pr.replicaArray, binary.BigEndian.Uint32(dat[21+i*4:21+(i+1)*4]))
+	}
+	// final offset after appending to replica array -> (pr.lenReplicaArray - 1) * 4
+	offset := (int(pr.lenReplicaArray) - 1) * 4
+	pr.lenInSyncReplicaArray = dat[offset]
+	pr.inSyncReplicaArray = make([]uint32, 0)
+	for i := 0; i < int(pr.lenInSyncReplicaArray)-1; i++ {
+		pr.inSyncReplicaArray = append(pr.inSyncReplicaArray, binary.BigEndian.Uint32(dat[offset+1+i*4:offset+1+(i+1*4)]))
+	}
+	offset = offset + 1 + (int(pr.lenInSyncReplicaArray)-1)*4
+	pr.lenRemovingReplicasArray = dat[offset]
+	pr.removingReplicasArray = make([]uint32, 0)
+	for i := 0; i < int(pr.lenRemovingReplicasArray)-1; i++ {
+		pr.removingReplicasArray = append(pr.removingReplicasArray, binary.BigEndian.Uint32(dat[offset+1+i*4:offset+1+(i+1)*4]))
+	}
+	offset = offset + 1 + (int(pr.lenRemovingReplicasArray)-1)*4
+
+	pr.lenAddingReplicasArray = dat[offset]
+	pr.addingReplicasArray = make([]uint32, 0)
+	for i := 0; i < int(pr.lenAddingReplicasArray)-1; i++ {
+		pr.addingReplicasArray = append(pr.addingReplicasArray, binary.BigEndian.Uint32(dat[offset+1+i*4:offset+1+(i+1)*4]))
+	}
+	offset = offset + 1 + (int(pr.lenAddingReplicasArray)-1)*4
+	pr.leader = binary.BigEndian.Uint32(dat[offset : offset+4])
+	pr.leaderEpoch = binary.BigEndian.Uint32(dat[offset+4 : offset+8])
+	pr.partitionEpoch = binary.BigEndian.Uint32(dat[offset+8 : offset+12])
+	pr.lenDirectoriesArray = dat[offset+12]
+	pr.directoriesArray = make([][16]byte, 0)
+	for i := 0; i < int(pr.lenDirectoriesArray)-1; i++ {
+		var tmp [16]byte
+		copy(tmp[:], dat[offset+12+i*16:offset+12+(i+1)*16])
+		pr.directoriesArray = append(pr.directoriesArray, tmp)
+	}
+	offset = offset + 12 + (int(pr.lenDirectoriesArray)-1)*16
+	pr.taggedFieldsCount = dat[offset]
+	return pr
+
 }
 
 // APIVersions Response Utils
@@ -321,4 +479,71 @@ type DescribeTopicPartitionsRequest struct {
 	response_partition_limit int32
 	cursor                   Cursor
 	_tagged_fields           int8
+}
+
+type RecordBatch struct {
+	baseOffset           uint64
+	batchLength          uint32
+	partitionLeaderEpoch uint32
+	magicByte            byte
+	crc                  uint32
+	attributes           uint16
+	lastOffsetDelta      uint32
+	baseTimestamp        uint64
+	maxTimestamp         uint64
+	producerID           uint64
+	producerEpoch        uint16
+	baseSequence         uint32
+	recordsLength        uint32
+	records              []Record
+}
+
+type RecordValue interface {
+	isRecordValue() uint8
+}
+
+func (TopicRecord) isRecordValue() uint8     { return 0x2 }
+func (PartitionRecord) isRecordValue() uint8 { return 0x3 }
+
+type Record struct {
+	length         uint8 // from attributes to end of record
+	attributes     uint8
+	timestampDelta uint8
+	offsetDelta    uint8
+	keyLength      int8
+	key            []byte
+	valueLength    int8
+	value          RecordValue
+}
+
+type TopicRecord struct {
+	frameVersion      uint8
+	recordType        uint8
+	version           uint8
+	nameLength        uint8
+	topicName         string
+	topicUUID         [16]byte
+	taggedFieldsCount uint8
+}
+
+type PartitionRecord struct {
+	frameVersion             uint8
+	recordType               uint8
+	version                  uint8
+	partitionID              uint32
+	topicUUID                [16]byte
+	lenReplicaArray          uint8
+	replicaArray             []uint32
+	lenInSyncReplicaArray    uint8
+	inSyncReplicaArray       []uint32
+	lenRemovingReplicasArray uint8
+	removingReplicasArray    []uint32
+	lenAddingReplicasArray   uint8
+	addingReplicasArray      []uint32
+	leader                   uint32
+	leaderEpoch              uint32
+	partitionEpoch           uint32
+	lenDirectoriesArray      uint8
+	directoriesArray         [][16]byte
+	taggedFieldsCount        uint8
 }
