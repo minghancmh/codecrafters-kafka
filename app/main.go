@@ -342,6 +342,7 @@ func getRecords(dat []byte, recordsLength uint32) []Record {
 		rec := new(Record)
 		offset += getRecord(dat[offset:], rec)
 		records = append(records, *rec)
+		i++
 
 	}
 	return records
@@ -374,7 +375,7 @@ func getRecord(dat []byte, resPtr *Record) uint8 {
 	}
 
 	res.headersArrayCount = dat[res.length]
-	fmt.Println("[getRecord]: headersArrayCount", res.headersArrayCount)
+	fmt.Println("[getRecord]: headersArrayCount:", res.headersArrayCount)
 
 	return res.length + 2 // to include the length field itself
 }
