@@ -375,19 +375,25 @@ func getRecord(dat []byte, resPtr *Record) uint8 {
 }
 
 func zigzagDecode(n uint8) int8 {
-    return int8((n >> 1) ^ uint8((int8(n&1)<<7)>>7))
+	return int8((n >> 1) ^ uint8((int8(n&1)<<7)>>7))
 }
 
 func getRecordValue(dat []byte) RecordValue {
 
+	fmt.Println("[getRecordValue]: Getting Record Value")
+
 	frameVer := dat[0]
 	recordType := dat[1]
+	fmt.Println("[getRecordValue]: frameVer:", frameVer)
+	fmt.Println("[getRecordValue]: recordType:", recordType)
 
 	switch recordType {
 	case 0x2: // topic record
 		return parseTopicRecord(dat[2:], frameVer)
 	case 0x3: // partitionRecord
 		return parsePartitionRecord(dat[2:], frameVer)
+	case 0xc:
+		return parseFeatureLevelRecord(dat[2:], frameVer)
 	default:
 		return nil
 	}
@@ -413,12 +419,12 @@ func parseTopicRecord(dat []byte, frameVer uint8) TopicRecord {
 	fmt.Println("[parseTopicRecord]: tr.topicUUID:", tr.topicUUID)
 	fmt.Println("[parseTopicRecord]: tr.taggedFieldsCount:", tr.taggedFieldsCount)
 
-
-
 	return tr
 }
 
 func parsePartitionRecord(dat []byte, frameVer uint8) PartitionRecord {
+	fmt.Println("[parsePartitionRecord]: Parsing Partition Record")
+
 	prPtr := new(PartitionRecord)
 	pr := *prPtr
 	pr.frameVersion = frameVer
@@ -465,6 +471,31 @@ func parsePartitionRecord(dat []byte, frameVer uint8) PartitionRecord {
 	offset = offset + 12 + (int(pr.lenDirectoriesArray)-1)*16
 	pr.taggedFieldsCount = dat[offset]
 	return pr
+
+}
+
+func parseFeatureLevelRecord(dat []byte, frameVer uint8) FeatureLevelRecord {
+	fmt.Println("[parseFeatureLevelRecord]: Parsing FeatureLevelRecord")
+	flPtr := new(FeatureLevelRecord)
+	fl := *flPtr
+	fl.frameVersion = frameVer
+	fl.recordType = 0xc
+	fl.version = dat[0]
+	fl.nameLength = dat[1]
+	fl.name = string(dat[2 : 2+fl.nameLength-1])
+	fl.featureLevel = binary.BigEndian.Uint16(dat[2+fl.nameLength-1 : 3+fl.nameLength])
+	fl.taggedFieldsCount = dat[3+fl.nameLength]
+
+	fmt.Println("[parseFeatureLevelRecord]: frameVersion:", fl.frameVersion)
+	fmt.Println("[parseFeatureLevelRecord]: recordType:", fl.recordType)
+	fmt.Println("[parseFeatureLevelRecord]: version:", fl.version)
+	fmt.Println("[parseFeatureLevelRecord]: nameLength:", fl.nameLength)
+	fmt.Println("[parseFeatureLevelRecord]: name:", fl.name)
+	fmt.Println("[parseFeatureLevelRecord]: featureLevel:", fl.featureLevel)
+	fmt.Println("[parseFeatureLevelRecord]: taggedFieldsCount:", fl.taggedFieldsCount)
+
+
+	return fl
 
 }
 
@@ -567,8 +598,9 @@ type RecordValue interface {
 	isRecordValue() uint8
 }
 
-func (TopicRecord) isRecordValue() uint8     { return 0x2 }
-func (PartitionRecord) isRecordValue() uint8 { return 0x3 }
+func (TopicRecord) isRecordValue() uint8        { return 0x2 }
+func (PartitionRecord) isRecordValue() uint8    { return 0x3 }
+func (FeatureLevelRecord) isRecordValue() uint8 { return 0xc }
 
 type Record struct {
 	length         uint8 // from attributes to end of record
@@ -611,4 +643,14 @@ type PartitionRecord struct {
 	lenDirectoriesArray      uint8
 	directoriesArray         [][16]byte
 	taggedFieldsCount        uint8
+}
+
+type FeatureLevelRecord struct {
+	frameVersion      uint8
+	recordType        uint8
+	version           uint8
+	nameLength        uint8
+	name              string
+	featureLevel      uint16
+	taggedFieldsCount uint8
 }
