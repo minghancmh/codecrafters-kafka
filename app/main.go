@@ -323,7 +323,7 @@ func getRecord(dat []byte, resPtr *Record) uint8 {
 	res.valueLength = int8(dat[4+res.keyLength])
 	res.value = getRecordValue(dat[5+res.keyLength:])
 
-	return res.length
+	return res.length + 2 // to include the length field itself
 }
 
 func getRecordValue(dat []byte) RecordValue {
