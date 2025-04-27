@@ -355,7 +355,7 @@ func getRecord(dat []byte, resPtr *Record) uint8 {
 	res.attributes = dat[1]
 	res.timestampDelta = dat[2]
 	res.offsetDelta = dat[3]
-	res.keyLength = zigzagDecode(dat[4]) // [TODO] must zig-zag decode!!!
+	res.keyLength = zigzagDecode(dat[4])
 	fmt.Println("[getRecord]: length:", res.length)
 	fmt.Println("[getRecord]: attributes:", res.attributes)
 	fmt.Println("[getRecord]: timestampDelta:", res.timestampDelta)
@@ -395,6 +395,7 @@ func getRecordValue(dat []byte) RecordValue {
 }
 
 func parseTopicRecord(dat []byte, frameVer uint8) TopicRecord {
+	fmt.Println("[parseTopicRecord]: Parsing Topic Record")
 	trPtr := new(TopicRecord)
 	tr := *trPtr
 	tr.frameVersion = frameVer
@@ -404,6 +405,16 @@ func parseTopicRecord(dat []byte, frameVer uint8) TopicRecord {
 	tr.topicName = string(dat[2 : 2+tr.nameLength-1])
 	copy(tr.topicUUID[:], dat[2+tr.nameLength-1:18+tr.nameLength-1])
 	tr.taggedFieldsCount = dat[18+tr.nameLength-1]
+	fmt.Println("[parseTopicRecord]: tr.frameVersion:", tr.frameVersion)
+	fmt.Println("[parseTopicRecord]: tr.recordType:", tr.recordType)
+	fmt.Println("[parseTopicRecord]: tr.version:", tr.version)
+	fmt.Println("[parseTopicRecord]: tr.nameLength:", tr.nameLength)
+	fmt.Println("[parseTopicRecord]: tr.topicName:", tr.topicName)
+	fmt.Println("[parseTopicRecord]: tr.topicUUID:", tr.topicUUID)
+	fmt.Println("[parseTopicRecord]: tr.taggedFieldsCount:", tr.taggedFieldsCount)
+
+
+
 	return tr
 }
 
