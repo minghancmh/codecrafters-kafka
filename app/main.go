@@ -392,6 +392,7 @@ func getRecord(dat []byte, resPtr *Record) uint8 {
 
 	res.headersArrayCount = dat[res.length]
 	fmt.Println("[getRecord]: headersArrayCount:", res.headersArrayCount)
+	fmt.Println("[getRecord]: res: ", res)
 
 	return res.length + 2 // to include the length field itself
 }
