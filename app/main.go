@@ -251,25 +251,35 @@ func getTopicByName(name string) TopicRecord {
 	if err != nil {
 		fmt.Println("Error reading file at path: ", path)
 	}
-	fmt.Println("dat: ", dat)
-	rb := readRecordBatch(dat, 0)
 
-	for _, rec := range rb.records {
-		val := rec.value
-		switch val.isRecordValue() {
-		case 0x2: // value record
-			tr := val.(TopicRecord)
-			if tr.topicName == name {
-				return tr
+	var offset uint32 = 0
+
+	for offset < uint32(len(dat)) {
+
+		rb := readRecordBatch(dat[offset:], 0)
+		lengthBatch := binary.BigEndian.Uint32(dat[offset+8:offset+12])
+		offset = 12 + lengthBatch
+
+		for _, rec := range rb.records {
+			val := rec.value
+			switch val.isRecordValue() {
+			case 0x2: // value record
+				fmt.Println("[getTopicByName]: value record found")
+				tr := val.(TopicRecord)
+				if tr.topicName == name {
+					return tr
+				}
+
+			case 0x3: // partition record
+				// pr := val.(PartitionRecord)
+				fmt.Println("[getTopicByName]: partition record parsing to be implemented")
+			case 0xc:
+				fmt.Println("[getTopicByName]: feature level record parsing to be implemented")
+			default:
+				fmt.Println("[getTopicByName]: no record type found")
 			}
 
-		case 0x3: // partition record
-			// pr := val.(PartitionRecord)
-			fmt.Println("partition record parsing to be implemented")
-		default:
-			fmt.Println("no record type found")
 		}
-
 	}
 	return TopicRecord{}
 }
@@ -608,14 +618,14 @@ func (PartitionRecord) isRecordValue() uint8    { return 0x3 }
 func (FeatureLevelRecord) isRecordValue() uint8 { return 0xc }
 
 type Record struct {
-	length         uint8 // from attributes to end of record
-	attributes     uint8
-	timestampDelta uint8
-	offsetDelta    uint8
-	keyLength      int8
-	key            []byte
-	valueLength    int8
-	value          RecordValue
+	length            uint8 // from attributes to end of record
+	attributes        uint8
+	timestampDelta    uint8
+	offsetDelta       uint8
+	keyLength         int8
+	key               []byte
+	valueLength       int8
+	value             RecordValue
 	headersArrayCount uint8
 }
 
