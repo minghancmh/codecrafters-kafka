@@ -260,6 +260,8 @@ func getTopicByName(name string) TopicRecord {
 		lengthBatch := binary.BigEndian.Uint32(dat[offset+8:offset+12])
 		offset = 12 + lengthBatch
 
+		fmt.Println("[getTopicByName]: len(rb.records):", len(rb.records))
+
 		for _, rec := range rb.records {
 			val := rec.value
 			switch val.isRecordValue() {
