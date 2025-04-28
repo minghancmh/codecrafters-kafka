@@ -257,7 +257,7 @@ func getTopicByName(name string) TopicRecord {
 	for offset < uint32(len(dat)) {
 
 		rb := readRecordBatch(dat[offset:], 0)
-		lengthBatch := binary.BigEndian.Uint32(dat[offset+8:offset+12])
+		lengthBatch := binary.BigEndian.Uint32(dat[offset+8 : offset+12])
 		offset = 12 + lengthBatch
 
 		fmt.Println("[getTopicByName]: len(rb.records):", len(rb.records))
@@ -265,7 +265,7 @@ func getTopicByName(name string) TopicRecord {
 		for _, rec := range rb.records {
 			fmt.Println("[getTopicByName]: rec:", rec)
 			val := rec.value
-			fmt.Println("[getTopicByName]: rec.value:", rec.value)	
+			fmt.Println("[getTopicByName]: rec.value:", rec.value)
 			switch val.isRecordValue() {
 			case 0x2: // value record
 				fmt.Println("[getTopicByName]: value record found")
@@ -425,74 +425,72 @@ func getRecordValue(dat []byte) RecordValue {
 func parseTopicRecord(dat []byte, frameVer uint8) TopicRecord {
 	fmt.Println("[parseTopicRecord]: Parsing Topic Record")
 	trPtr := new(TopicRecord)
-	tr := *trPtr
-	tr.frameVersion = frameVer
-	tr.recordType = 0x2
-	tr.version = dat[0]
-	tr.nameLength = dat[1]
-	tr.topicName = string(dat[2 : 2+tr.nameLength-1])
-	copy(tr.topicUUID[:], dat[2+tr.nameLength-1:18+tr.nameLength-1])
-	tr.taggedFieldsCount = dat[18+tr.nameLength-1]
-	fmt.Println("[parseTopicRecord]: tr.frameVersion:", tr.frameVersion)
-	fmt.Println("[parseTopicRecord]: tr.recordType:", tr.recordType)
-	fmt.Println("[parseTopicRecord]: tr.version:", tr.version)
-	fmt.Println("[parseTopicRecord]: tr.nameLength:", tr.nameLength)
-	fmt.Println("[parseTopicRecord]: tr.topicName:", tr.topicName)
-	fmt.Println("[parseTopicRecord]: tr.topicUUID:", tr.topicUUID)
-	fmt.Println("[parseTopicRecord]: tr.taggedFieldsCount:", tr.taggedFieldsCount)
+	trPtr.frameVersion = frameVer
+	trPtr.recordType = 0x2
+	trPtr.version = dat[0]
+	trPtr.nameLength = dat[1]
+	trPtr.topicName = string(dat[2 : 2+trPtr.nameLength-1])
+	copy(trPtr.topicUUID[:], dat[2+trPtr.nameLength-1:18+trPtr.nameLength-1])
+	trPtr.taggedFieldsCount = dat[18+trPtr.nameLength-1]
+	fmt.Println("[parseTopicRecord]: trPtr.frameVersion:", trPtr.frameVersion)
+	fmt.Println("[parseTopicRecord]: trPtr.recordType:", trPtr.recordType)
+	fmt.Println("[parseTopicRecord]: trPtr.version:", trPtr.version)
+	fmt.Println("[parseTopicRecord]: trPtr.nameLength:", trPtr.nameLength)
+	fmt.Println("[parseTopicRecord]: trPtr.topicName:", trPtr.topicName)
+	fmt.Println("[parseTopicRecord]: trPtr.topicUUID:", trPtr.topicUUID)
+	fmt.Println("[parseTopicRecord]: trPtr.taggedFieldsCount:", trPtr.taggedFieldsCount)
 
-	return tr
+	return *trPtr
 }
 
 func parsePartitionRecord(dat []byte, frameVer uint8) PartitionRecord {
 	fmt.Println("[parsePartitionRecord]: Parsing Partition Record")
 
 	prPtr := new(PartitionRecord)
-	pr := *prPtr
-	pr.frameVersion = frameVer
-	pr.recordType = 0x3
-	pr.version = dat[0]
-	pr.partitionID = binary.BigEndian.Uint32(dat[1:5])
-	copy(pr.topicUUID[:], dat[5:21])
-	pr.lenReplicaArray = dat[21]
-	pr.replicaArray = make([]uint32, 0)
-	for i := 0; i < int(pr.lenReplicaArray)-1; i++ {
-		pr.replicaArray = append(pr.replicaArray, binary.BigEndian.Uint32(dat[21+i*4:21+(i+1)*4]))
+	prPtr.frameVersion = frameVer
+	prPtr.recordType = 0x3
+	prPtr.version = dat[0]
+	prPtr.partitionID = binary.BigEndian.Uint32(dat[1:5])
+	copy(prPtr.topicUUID[:], dat[5:21])
+	prPtr.lenReplicaArray = dat[21]
+	prPtr.replicaArray = make([]uint32, 0)
+	for i := 0; i < int(prPtr.lenReplicaArray)-1; i++ {
+		prPtr.replicaArray = append(prPtr.replicaArray, binary.BigEndian.Uint32(dat[21+i*4:21+(i+1)*4]))
 	}
-	// final offset after appending to replica array -> (pr.lenReplicaArray - 1) * 4
-	offset := (int(pr.lenReplicaArray) - 1) * 4
-	pr.lenInSyncReplicaArray = dat[offset]
-	pr.inSyncReplicaArray = make([]uint32, 0)
-	for i := 0; i < int(pr.lenInSyncReplicaArray)-1; i++ {
-		pr.inSyncReplicaArray = append(pr.inSyncReplicaArray, binary.BigEndian.Uint32(dat[offset+1+i*4:offset+1+(i+1*4)]))
+	// final offset after appending to replica array -> (prPtr.lenReplicaArray - 1) * 4
+	offset := (int(prPtr.lenReplicaArray) - 1) * 4
+	prPtr.lenInSyncReplicaArray = dat[offset]
+	prPtr.inSyncReplicaArray = make([]uint32, 0)
+	for i := 0; i < int(prPtr.lenInSyncReplicaArray)-1; i++ {
+		prPtr.inSyncReplicaArray = append(prPtr.inSyncReplicaArray, binary.BigEndian.Uint32(dat[offset+1+i*4:offset+1+(i+1*4)]))
 	}
-	offset = offset + 1 + (int(pr.lenInSyncReplicaArray)-1)*4
-	pr.lenRemovingReplicasArray = dat[offset]
-	pr.removingReplicasArray = make([]uint32, 0)
-	for i := 0; i < int(pr.lenRemovingReplicasArray)-1; i++ {
-		pr.removingReplicasArray = append(pr.removingReplicasArray, binary.BigEndian.Uint32(dat[offset+1+i*4:offset+1+(i+1)*4]))
+	offset = offset + 1 + (int(prPtr.lenInSyncReplicaArray)-1)*4
+	prPtr.lenRemovingReplicasArray = dat[offset]
+	prPtr.removingReplicasArray = make([]uint32, 0)
+	for i := 0; i < int(prPtr.lenRemovingReplicasArray)-1; i++ {
+		prPtr.removingReplicasArray = append(prPtr.removingReplicasArray, binary.BigEndian.Uint32(dat[offset+1+i*4:offset+1+(i+1)*4]))
 	}
-	offset = offset + 1 + (int(pr.lenRemovingReplicasArray)-1)*4
+	offset = offset + 1 + (int(prPtr.lenRemovingReplicasArray)-1)*4
 
-	pr.lenAddingReplicasArray = dat[offset]
-	pr.addingReplicasArray = make([]uint32, 0)
-	for i := 0; i < int(pr.lenAddingReplicasArray)-1; i++ {
-		pr.addingReplicasArray = append(pr.addingReplicasArray, binary.BigEndian.Uint32(dat[offset+1+i*4:offset+1+(i+1)*4]))
+	prPtr.lenAddingReplicasArray = dat[offset]
+	prPtr.addingReplicasArray = make([]uint32, 0)
+	for i := 0; i < int(prPtr.lenAddingReplicasArray)-1; i++ {
+		prPtr.addingReplicasArray = append(prPtr.addingReplicasArray, binary.BigEndian.Uint32(dat[offset+1+i*4:offset+1+(i+1)*4]))
 	}
-	offset = offset + 1 + (int(pr.lenAddingReplicasArray)-1)*4
-	pr.leader = binary.BigEndian.Uint32(dat[offset : offset+4])
-	pr.leaderEpoch = binary.BigEndian.Uint32(dat[offset+4 : offset+8])
-	pr.partitionEpoch = binary.BigEndian.Uint32(dat[offset+8 : offset+12])
-	pr.lenDirectoriesArray = dat[offset+12]
-	pr.directoriesArray = make([][16]byte, 0)
-	for i := 0; i < int(pr.lenDirectoriesArray)-1; i++ {
+	offset = offset + 1 + (int(prPtr.lenAddingReplicasArray)-1)*4
+	prPtr.leader = binary.BigEndian.Uint32(dat[offset : offset+4])
+	prPtr.leaderEpoch = binary.BigEndian.Uint32(dat[offset+4 : offset+8])
+	prPtr.partitionEpoch = binary.BigEndian.Uint32(dat[offset+8 : offset+12])
+	prPtr.lenDirectoriesArray = dat[offset+12]
+	prPtr.directoriesArray = make([][16]byte, 0)
+	for i := 0; i < int(prPtr.lenDirectoriesArray)-1; i++ {
 		var tmp [16]byte
 		copy(tmp[:], dat[offset+12+i*16:offset+12+(i+1)*16])
-		pr.directoriesArray = append(pr.directoriesArray, tmp)
+		prPtr.directoriesArray = append(prPtr.directoriesArray, tmp)
 	}
-	offset = offset + 12 + (int(pr.lenDirectoriesArray)-1)*16
-	pr.taggedFieldsCount = dat[offset]
-	return pr
+	offset = offset + 12 + (int(prPtr.lenDirectoriesArray)-1)*16
+	prPtr.taggedFieldsCount = dat[offset]
+	return *prPtr
 
 }
 
