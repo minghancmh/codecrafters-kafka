@@ -367,34 +367,33 @@ func getRecords(dat []byte, recordsLength uint32) []Record {
 
 func getRecord(dat []byte, resPtr *Record) uint8 {
 	fmt.Println("[getRecord]: Getting Record")
-	res := *resPtr
-	res.length = dat[0]
-	res.attributes = dat[1]
-	res.timestampDelta = dat[2]
-	res.offsetDelta = dat[3]
-	res.keyLength = zigzagDecode(dat[4])
-	fmt.Println("[getRecord]: length:", res.length)
-	fmt.Println("[getRecord]: attributes:", res.attributes)
-	fmt.Println("[getRecord]: timestampDelta:", res.timestampDelta)
-	fmt.Println("[getRecord]: offsetDelta:", res.offsetDelta)
-	fmt.Println("[getRecord]: keyLength:", res.keyLength)
+	resPtr.length = dat[0]
+	resPtr.attributes = dat[1]
+	resPtr.timestampDelta = dat[2]
+	resPtr.offsetDelta = dat[3]
+	resPtr.keyLength = zigzagDecode(dat[4])
+	fmt.Println("[getRecord]: length:", resPtr.length)
+	fmt.Println("[getRecord]: attributes:", resPtr.attributes)
+	fmt.Println("[getRecord]: timestampDelta:", resPtr.timestampDelta)
+	fmt.Println("[getRecord]: offsetDelta:", resPtr.offsetDelta)
+	fmt.Println("[getRecord]: keyLength:", resPtr.keyLength)
 
-	if res.keyLength != -1 {
-		res.key = make([]byte, res.keyLength)
-		copy(res.key[:], dat[5:5+res.keyLength])
-		fmt.Println("[getRecord]: key:", res.key)
-		res.valueLength = int8(dat[5+res.keyLength])
-		res.value = getRecordValue(dat[6+res.keyLength:])
+	if resPtr.keyLength != -1 {
+		resPtr.key = make([]byte, resPtr.keyLength)
+		copy(resPtr.key[:], dat[5:5+resPtr.keyLength])
+		fmt.Println("[getRecord]: key:", resPtr.key)
+		resPtr.valueLength = int8(dat[5+resPtr.keyLength])
+		resPtr.value = getRecordValue(dat[6+resPtr.keyLength:])
 	} else {
-		res.valueLength = int8(dat[5])
-		res.value = getRecordValue(dat[6:])
+		resPtr.valueLength = int8(dat[5])
+		resPtr.value = getRecordValue(dat[6:])
 	}
 
-	res.headersArrayCount = dat[res.length]
-	fmt.Println("[getRecord]: headersArrayCount:", res.headersArrayCount)
-	fmt.Println("[getRecord]: res: ", res)
+	resPtr.headersArrayCount = dat[resPtr.length]
+	fmt.Println("[getRecord]: headersArrayCount:", resPtr.headersArrayCount)
+	fmt.Println("[getRecord]: resPtr: ", resPtr)
 
-	return res.length + 2 // to include the length field itself
+	return resPtr.length + 2 // to include the length field itself
 }
 
 func zigzagDecode(n uint8) int8 {
