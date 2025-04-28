@@ -263,7 +263,9 @@ func getTopicByName(name string) TopicRecord {
 		fmt.Println("[getTopicByName]: len(rb.records):", len(rb.records))
 
 		for _, rec := range rb.records {
+			fmt.Println("[getTopicByName]: rec:", rec)
 			val := rec.value
+			fmt.Println("[getTopicByName]: rec.value:", rec.value)	
 			switch val.isRecordValue() {
 			case 0x2: // value record
 				fmt.Println("[getTopicByName]: value record found")
