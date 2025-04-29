@@ -239,7 +239,7 @@ func getRecord(dat []byte, resPtr *record) uint64 {
 	fmt.Println("[getRecord]: headersArrayCount:", resPtr.headersArrayCount)
 	fmt.Println("[getRecord]: resPtr: ", resPtr)
 
-	return uint64(length + 2)
+	return uint64(length + 1)
 }
 
 func zigzagDecode(n uint8) int8 {
