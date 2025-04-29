@@ -49,8 +49,7 @@ type TopicRecord struct {
 	frameVersion      uint8
 	recordType        uint8
 	version           uint8
-	nameLength        uint8
-	topicName         string
+	topicName         types.CompactString
 	TopicUUID         types.UUID
 	taggedFieldsCount uint8
 }
@@ -111,7 +110,8 @@ func DescribeTopicPartitionsFromMetadataFile() (map[types.UUID][]PartitionRecord
 			case 0x2:
 				fmt.Println("[describeTopicPartitions]: Topic Record found!")
 				tr := val.(TopicRecord)
-				topicRecords[tr.topicName] = tr
+				topicRecords[tr.topicName.Content] = tr
+				tr.topicName.Length = uint64(len(tr.topicName.Content))
 
 			case 0x3: // partition record
 				fmt.Println("[describeTopicPartitions]: Partition Record found!")
@@ -260,14 +260,18 @@ func parseTopicRecord(dat []byte, frameVer uint8) TopicRecord {
 	trPtr.frameVersion = frameVer
 	trPtr.recordType = 0x2
 	trPtr.version = dat[0]
-	trPtr.nameLength = dat[1]
-	trPtr.topicName = string(dat[2 : 2+trPtr.nameLength-1])
-	copy(trPtr.TopicUUID[:], dat[2+trPtr.nameLength-1:18+trPtr.nameLength-1])
-	trPtr.taggedFieldsCount = dat[18+trPtr.nameLength-1]
+
+	nbytes, err := trPtr.topicName.FromBytes(dat[1:])
+	if err != nil {
+		log("Error parsing topic name")
+	}
+	offset := 1 + nbytes
+
+	copy(trPtr.TopicUUID[:], dat[offset:offset+16])
+	trPtr.taggedFieldsCount = dat[offset+16]
 	fmt.Println("[parseTopicRecord]: trPtr.frameVersion:", trPtr.frameVersion)
 	fmt.Println("[parseTopicRecord]: trPtr.recordType:", trPtr.recordType)
 	fmt.Println("[parseTopicRecord]: trPtr.version:", trPtr.version)
-	fmt.Println("[parseTopicRecord]: trPtr.nameLength:", trPtr.nameLength)
 	fmt.Println("[parseTopicRecord]: trPtr.topicName:", trPtr.topicName)
 	fmt.Println("[parseTopicRecord]: trPtr.topicUUID:", trPtr.TopicUUID)
 	fmt.Println("[parseTopicRecord]: trPtr.taggedFieldsCount:", trPtr.taggedFieldsCount)
