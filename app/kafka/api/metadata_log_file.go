@@ -26,7 +26,7 @@ type RecordBatch struct {
 }
 
 type record struct {
-	length            uint8 // from attributes to end of record
+	length            uint64 // from attributes to end of record
 	attributes        uint8
 	timestampDelta    uint8
 	offsetDelta       uint8
@@ -183,7 +183,7 @@ func deserializeRecordBatch(dat []byte, offset uint64) RecordBatch {
 func getRecords(dat []byte, recordsLength uint32) []record {
 	records := make([]record, 0)
 	var i uint32 = 0
-	var offset uint8 = 0
+	var offset uint64 = 0
 	for i < recordsLength {
 		// parse the record
 		rec := new(record)
@@ -198,13 +198,19 @@ func getRecords(dat []byte, recordsLength uint32) []record {
 
 }
 
-func getRecord(dat []byte, resPtr *record) uint8 {
+func getRecord(dat []byte, resPtr *record) uint64 {
 	fmt.Println("[getRecord]: Getting Record")
-	resPtr.length = dat[0]
-	resPtr.attributes = dat[1]
-	resPtr.timestampDelta = dat[2]
-	resPtr.offsetDelta = dat[3]
-	resPtr.keyLength = zigzagDecode(dat[4])
+	length, nbytes := binary.Uvarint(dat[0:])
+	if nbytes <= 0 {
+		log("Invalid Uvarint encoding!")
+	}
+	resPtr.length = length
+	offset := nbytes
+
+	resPtr.attributes = dat[offset]
+	resPtr.timestampDelta = dat[offset +1]
+	resPtr.offsetDelta = dat[offset+2]
+	resPtr.keyLength = zigzagDecode(dat[offset+3])
 	fmt.Println("[getRecord]: length:", resPtr.length)
 	fmt.Println("[getRecord]: attributes:", resPtr.attributes)
 	fmt.Println("[getRecord]: timestampDelta:", resPtr.timestampDelta)
