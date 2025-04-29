@@ -23,7 +23,7 @@ func (ca *CompactArray[T]) FromBytes(data []byte, elementReader func([]byte) (T,
 	adjustedLength := length - 1
 	ca.Length = adjustedLength
 	offset := nbytes
-	ca.Elements = make([]T, length)
+	ca.Elements = make([]T, adjustedLength)
 
 	for i := 0; i < int(adjustedLength); i++ {
 		elem, consumed, err := elementReader(data[offset:])
