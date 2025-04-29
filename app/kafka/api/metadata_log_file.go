@@ -221,14 +221,13 @@ func getRecord(dat []byte, resPtr *record) uint64 {
 	fmt.Println("[getRecord]: timestampDelta:", resPtr.timestampDelta)
 	fmt.Println("[getRecord]: offsetDelta:", resPtr.offsetDelta)
 	fmt.Println("[getRecord]: keyLength:", resPtr.keyLength)
-	var keyLength int8 = 0
+
 	if resPtr.keyLength != -1 {
 		resPtr.key = make([]byte, resPtr.keyLength)
 		copy(resPtr.key[:], dat[offset+4:offset+4+int(resPtr.keyLength)])
 		fmt.Println("[getRecord]: key:", resPtr.key)
 		resPtr.valueLength = int8(dat[offset+5+int(resPtr.keyLength)])
 		resPtr.value = getRecordValue(dat[6+resPtr.keyLength:])
-		keyLength = resPtr.keyLength
 	} else {
 		resPtr.valueLength = int8(dat[offset+4])
 		log("valueLength: %v", resPtr.valueLength)
@@ -240,7 +239,7 @@ func getRecord(dat []byte, resPtr *record) uint64 {
 	fmt.Println("[getRecord]: headersArrayCount:", resPtr.headersArrayCount)
 	fmt.Println("[getRecord]: resPtr: ", resPtr)
 
-	return uint64(int(nbytes) + int(keyLength) + 6 + int(resPtr.valueLength)) // to include the length field itself
+	return uint64(length + 2)
 }
 
 func zigzagDecode(n uint8) int8 {
