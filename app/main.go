@@ -59,6 +59,7 @@ func handleConnection(conn net.Conn) {
 			log("read err:", err)
 			os.Exit(1)
 		}
+		log("buf:", buf)
 
 		// parse the message
 		// messageSize := binary.BigEndian.Uint32(buf[0:4])
