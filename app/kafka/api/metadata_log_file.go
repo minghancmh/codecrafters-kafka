@@ -351,11 +351,12 @@ func deserializePartitionRecord(dat []byte, frameVer uint8) PartitionRecord {
 	log("PartitionEpoch: %v", prPtr.PartitionEpoch)
 
 	offset = offset + 12
-	log("Start of directories array: %v", dat[offset:])
 	nbytes, err = prPtr.DirectoriesArray.FromBytes(dat[offset:], types.UUIDReader)
+	log("DirectoriesArray: %v", prPtr.DirectoriesArray)
 
 	offset += nbytes
 	prPtr.TaggedFieldsCount = dat[offset]
+	log("TaggedFieldsCount: %v", prPtr.TaggedFieldsCount)
 	return *prPtr
 
 }
