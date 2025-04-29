@@ -220,13 +220,15 @@ func getRecord(dat []byte, resPtr *record) uint64 {
 
 	if resPtr.keyLength != -1 {
 		resPtr.key = make([]byte, resPtr.keyLength)
-		copy(resPtr.key[:], dat[5:5+resPtr.keyLength])
+		copy(resPtr.key[:], dat[offset+4:offset+4+int(resPtr.keyLength)])
 		fmt.Println("[getRecord]: key:", resPtr.key)
-		resPtr.valueLength = int8(dat[5+resPtr.keyLength])
+		resPtr.valueLength = int8(dat[offset+5+int(resPtr.keyLength)])
 		resPtr.value = getRecordValue(dat[6+resPtr.keyLength:])
 	} else {
 		resPtr.valueLength = int8(dat[5])
+		log("valueLength: %v", resPtr, resPtr.valueLength)
 		resPtr.value = getRecordValue(dat[6:])
+		log("value: %v", resPtr.value)
 	}
 
 	resPtr.headersArrayCount = dat[resPtr.length]
