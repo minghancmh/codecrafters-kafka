@@ -206,6 +206,7 @@ func getRecord(dat []byte, resPtr *record) uint64 {
 		log("Invalid Uvarint encoding!")
 	}
 	resPtr.length = length
+	log("resPtr.length:", length)
 	offset := nbytes
 
 	resPtr.attributes = dat[offset]
