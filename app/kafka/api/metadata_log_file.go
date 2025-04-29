@@ -225,9 +225,9 @@ func getRecord(dat []byte, resPtr *record) uint64 {
 		resPtr.valueLength = int8(dat[offset+5+int(resPtr.keyLength)])
 		resPtr.value = getRecordValue(dat[6+resPtr.keyLength:])
 	} else {
-		resPtr.valueLength = int8(dat[5])
+		resPtr.valueLength = int8(dat[offset+4])
 		log("valueLength: %v", resPtr, resPtr.valueLength)
-		resPtr.value = getRecordValue(dat[6:])
+		resPtr.value = getRecordValue(dat[offset+5:])
 		log("value: %v", resPtr.value)
 	}
 
