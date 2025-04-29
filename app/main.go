@@ -111,6 +111,7 @@ func handleConnection(conn net.Conn) {
 		case DESCRIBE_TOPIC_PARTITIONS:
 			var req api.DescribeTopicPartitionsRequest
 			api.DeserializeTopicPartitionsRequest(buf[0:], &req)
+			log("DESCRIBE_TOPIC_PARTITIONS: parsedRequest:", req)
 
 			var res api.DescribeTopicPartitionsResponse
 			res.Header.CorrelationID = req.Header.CorrelationID
@@ -164,8 +165,11 @@ func handleConnection(conn net.Conn) {
 			}
 			res.Body.NextCursor = nil
 			res.Body.TagBuffer = 0
+			log("DESCRIBE_TOPIC_PARTITIONS: res:", res)
 
 			response := api.SerializeDescribeTopicPartitionsResponse(&res)
+			log("DESCRIBE_TOPIC_PARTITIONS: serialized response:", response)
+
 
 			defer conn.Close() // we need to close the connection after function exit
 			nbytes, err := conn.Write(response)
