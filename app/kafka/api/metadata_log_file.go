@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/binary"
+	"encoding/hex"
 	"fmt"
 	"os"
 
@@ -89,6 +90,7 @@ func DescribeTopicPartitionsFromMetadataFile() (map[types.UUID][]PartitionRecord
 		fmt.Println("Error reading file at path: ", path)
 	}
 	log("dat:", dat)
+	log("Hexdump dat: %s\n", hex.Dump(dat))
 
 	var offset uint32 = 0
 	topicRecords := make(map[string]TopicRecord)               // topicName -> TopicRecord
@@ -210,7 +212,7 @@ func getRecord(dat []byte, resPtr *record) uint64 {
 	offset := nbytes
 
 	resPtr.attributes = dat[offset]
-	resPtr.timestampDelta = dat[offset +1]
+	resPtr.timestampDelta = dat[offset+1]
 	resPtr.offsetDelta = dat[offset+2]
 	resPtr.keyLength = zigzagDecode(dat[offset+3])
 	fmt.Println("[getRecord]: length:", resPtr.length)
