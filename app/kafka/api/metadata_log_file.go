@@ -223,19 +223,21 @@ func getRecord(dat []byte, resPtr *record) uint64 {
 	fmt.Println("[getRecord]: keyLength:", resPtr.keyLength)
 
 	if resPtr.keyLength != -1 {
-		resPtr.key = make([]byte, resPtr.keyLength)
-		copy(resPtr.key[:], dat[offset+4:offset+4+int(resPtr.keyLength)])
-		fmt.Println("[getRecord]: key:", resPtr.key)
-		resPtr.valueLength = int8(dat[offset+5+int(resPtr.keyLength)])
-		resPtr.value = getRecordValue(dat[6+resPtr.keyLength:])
+		log("Error, key length should always be -1!")
+		// resPtr.key = make([]byte, resPtr.keyLength)
+		// copy(resPtr.key[:], dat[offset+4:offset+4+int(resPtr.keyLength)])
+		// fmt.Println("[getRecord]: key:", resPtr.key)
+		// resPtr.valueLength = int8(dat[offset+5+int(resPtr.keyLength)])
+		// resPtr.value = getRecordValue(dat[6+resPtr.keyLength:])
 	} else {
 		tmplen, nbytes := binary.Uvarint(dat[offset+4:])
 		if nbytes <= 0 {
 			log("Invalid decode of value length!")
 		}
 		resPtr.valueLength = int8(zigzagDecode(tmplen))
+		offset = offset + 4 + nbytes
 		log("valueLength: %v", resPtr.valueLength)
-		resPtr.value = getRecordValue(dat[offset+5:])
+		resPtr.value = getRecordValue(dat[offset:])
 		log("value: %v", resPtr.value)
 	}
 
