@@ -234,7 +234,6 @@ func getRecord(dat []byte, resPtr *record) uint64 {
 			log("Invalid decode of value length!")
 		}
 		resPtr.valueLength = int8(zigzagDecode(tmplen))
-		offset += nbytes
 		log("valueLength: %v", resPtr.valueLength)
 		resPtr.value = getRecordValue(dat[offset+5:])
 		log("value: %v", resPtr.value)
