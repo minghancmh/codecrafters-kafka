@@ -203,19 +203,19 @@ func getRecords(dat []byte, recordsLength uint32) []record {
 
 func getRecord(dat []byte, resPtr *record) uint64 {
 	fmt.Println("[getRecord]: Getting Record")
-	length := zigzagDecode(dat[0])
-	// length, nbytes := binary.Uvarint(dat[0:])
-	// if nbytes <= 0 {
-	// 	log("Invalid Uvarint encoding!")
-	// }
-	// resPtr.length = length
-	log("resPtr.length:", length)
-	offset := 1
+	// length := zigzagDecode(dat[0])
+	tmplen, nbytes := binary.Uvarint(dat[0:])
+	if nbytes <= 0 {
+		log("Invalid Uvarint encoding!")
+	}
+	resPtr.length = uint64(zigzagDecode(tmplen))
+	log("resPtr.length:", resPtr.length)
+	offset := nbytes
 
 	resPtr.attributes = dat[offset]
 	resPtr.timestampDelta = dat[offset+1]
 	resPtr.offsetDelta = dat[offset+2]
-	resPtr.keyLength = zigzagDecode(dat[offset+3])
+	resPtr.keyLength = int8(zigzagDecode(uint64(dat[offset+3])))
 	fmt.Println("[getRecord]: length:", resPtr.length)
 	fmt.Println("[getRecord]: attributes:", resPtr.attributes)
 	fmt.Println("[getRecord]: timestampDelta:", resPtr.timestampDelta)
@@ -229,7 +229,11 @@ func getRecord(dat []byte, resPtr *record) uint64 {
 		resPtr.valueLength = int8(dat[offset+5+int(resPtr.keyLength)])
 		resPtr.value = getRecordValue(dat[6+resPtr.keyLength:])
 	} else {
-		resPtr.valueLength = int8(dat[offset+4])
+		tmplen, nbytes := binary.Uvarint(dat[offset+4:])
+		if nbytes <= 0 {
+			log("Invalid decode of value length!")
+		}
+		resPtr.valueLength = int8(zigzagDecode(tmplen))
 		log("valueLength: %v", resPtr.valueLength)
 		resPtr.value = getRecordValue(dat[offset+5:])
 		log("value: %v", resPtr.value)
@@ -239,11 +243,11 @@ func getRecord(dat []byte, resPtr *record) uint64 {
 	fmt.Println("[getRecord]: headersArrayCount:", resPtr.headersArrayCount)
 	fmt.Println("[getRecord]: resPtr: ", resPtr)
 
-	return uint64(length + 1)
+	return uint64(resPtr.length + uint64(nbytes))
 }
 
-func zigzagDecode(n uint8) int8 {
-	return int8((n >> 1) ^ uint8((int8(n&1)<<7)>>7))
+func zigzagDecode(n uint64) int64 {
+	return int64((n >> 1) ^ uint64((int64(n&1)<<63)>>63))
 }
 
 func getRecordValue(dat []byte) recordValue {
