@@ -308,36 +308,47 @@ func deserializePartitionRecord(dat []byte, frameVer uint8) PartitionRecord {
 	prPtr.RecordType = 0x3
 	prPtr.Version = dat[0]
 	prPtr.PartitionID = binary.BigEndian.Uint32(dat[1:5])
+	log("FrameVersion: %v", prPtr.FrameVersion)
+	log("RecordType: %v", prPtr.RecordType)
+	log("Version: %v", prPtr.Version)
+	log("PartitionID: %v", prPtr.PartitionID)
 	copy(prPtr.TopicUUID[:], dat[5:21])
+	log("topicUUID: %v", prPtr.TopicUUID)
 
 	nbytes, err := prPtr.ReplicaArray.FromBytes(dat[21:], types.ReplicaArrayReader)
 	if err != nil {
 		log("error decoding replica array")
 	}
+	log("ReplicaArray:", prPtr.ReplicaArray)
 	offset := nbytes
 
 	nbytes, err = prPtr.InSyncReplicaArray.FromBytes(dat[offset:], types.ReplicaArrayReader)
 	if err != nil {
 		log("error decoding insync replica array")
 	}
+	log("InSyncReplicaArray:", prPtr.InSyncReplicaArray)
 	offset += nbytes
 
 	nbytes, err = prPtr.RemovingReplicasArray.FromBytes(dat[offset:], types.ReplicaArrayReader)
 	if err != nil {
 		log("error decoding removing replica array")
 	}
+	log("RemovingReplicasArray:", prPtr.RemovingReplicasArray)
 	offset += nbytes
 
 	nbytes, err = prPtr.AddingReplicasArray.FromBytes(dat[offset:], types.ReplicaArrayReader)
 	if err != nil {
 		log("error decoding adding replica array")
 	}
-
+	log("AddingReplicasArray:", prPtr.AddingReplicasArray)
 	offset += nbytes
 
 	prPtr.Leader = binary.BigEndian.Uint32(dat[offset : offset+4])
 	prPtr.LeaderEpoch = binary.BigEndian.Uint32(dat[offset+4 : offset+8])
 	prPtr.PartitionEpoch = binary.BigEndian.Uint32(dat[offset+8 : offset+12])
+	log("Leader: %v", prPtr.Leader)
+	log("LeaderEpoch: %v", prPtr.LeaderEpoch)
+	log("PartitionEpoch: %v", prPtr.PartitionEpoch)
 
 	offset = offset + 12
 	log("Start of directories array: %v", dat[offset:])
