@@ -320,7 +320,7 @@ func deserializePartitionRecord(dat []byte, frameVer uint8) PartitionRecord {
 		log("error decoding replica array")
 	}
 	log("ReplicaArray:", prPtr.ReplicaArray)
-	offset := nbytes
+	offset := 21 + nbytes
 
 	nbytes, err = prPtr.InSyncReplicaArray.FromBytes(dat[offset:], types.ReplicaArrayReader)
 	if err != nil {
