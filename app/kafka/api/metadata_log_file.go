@@ -203,13 +203,14 @@ func getRecords(dat []byte, recordsLength uint32) []record {
 
 func getRecord(dat []byte, resPtr *record) uint64 {
 	fmt.Println("[getRecord]: Getting Record")
-	length, nbytes := binary.Uvarint(dat[0:])
-	if nbytes <= 0 {
-		log("Invalid Uvarint encoding!")
-	}
-	resPtr.length = length
+	length := zigzagDecode(dat[0])
+	// length, nbytes := binary.Uvarint(dat[0:])
+	// if nbytes <= 0 {
+	// 	log("Invalid Uvarint encoding!")
+	// }
+	// resPtr.length = length
 	log("resPtr.length:", length)
-	offset := nbytes
+	offset := 1
 
 	resPtr.attributes = dat[offset]
 	resPtr.timestampDelta = dat[offset+1]
@@ -279,6 +280,7 @@ func parseTopicRecord(dat []byte, frameVer uint8) TopicRecord {
 	if err != nil {
 		log("Error parsing topic name")
 	}
+	log("topicName: %s", trPtr.topicName.Content)
 	offset := 1 + nbytes
 
 	copy(trPtr.TopicUUID[:], dat[offset:offset+16])
