@@ -115,13 +115,13 @@ func handleConnection(conn net.Conn) {
 
 			var res api.DescribeTopicPartitionsResponse
 			res.Header.CorrelationID = req.Header.CorrelationID
-			log("corrId:", res.Header.CorrelationID)
+			log("corrId: %v\n", res.Header.CorrelationID)
 			res.Header.TagBuffer = 0x0
 			res.Body.ThrottleTime = 0
 			res.Body.TopicsArray.Elements = make([]types.TopicRes, 0)
-			log("eleemnts:", res.Body.TopicsArray.Elements)
+			log("eleemnts:%v\n", res.Body.TopicsArray.Elements)
 			res.Body.TopicsArray.Length = req.Body.Topics.Length
-			log("length:", res.Body.TopicsArray.Length)
+			log("length:%v\n", res.Body.TopicsArray.Length)
 
 			partitionRecords, topicRecords := api.DescribeTopicPartitionsFromMetadataFile()
 			log("reached line 124")

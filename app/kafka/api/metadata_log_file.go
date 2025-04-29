@@ -95,7 +95,7 @@ func DescribeTopicPartitionsFromMetadataFile() (map[types.UUID][]PartitionRecord
 	partitionRecords := make(map[types.UUID][]PartitionRecord) // topic UUID -> []PartitionRecord
 
 	for offset < uint32(len(dat)) {
-
+		log("Offset: %v\n", offset)
 		rb := deserializeRecordBatch(dat[offset:], 0)
 		lengthBatch := binary.BigEndian.Uint32(dat[offset+8 : offset+12])
 		offset = 12 + lengthBatch
