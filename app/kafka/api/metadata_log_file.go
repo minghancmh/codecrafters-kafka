@@ -340,6 +340,7 @@ func deserializePartitionRecord(dat []byte, frameVer uint8) PartitionRecord {
 	prPtr.PartitionEpoch = binary.BigEndian.Uint32(dat[offset+8 : offset+12])
 
 	offset = offset + 12
+	log("Start of directories array: %v", dat[offset:])
 	nbytes, err = prPtr.DirectoriesArray.FromBytes(dat[offset:], types.UUIDReader)
 
 	offset += nbytes
