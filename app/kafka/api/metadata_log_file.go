@@ -191,6 +191,7 @@ func getRecords(dat []byte, recordsLength uint32) []record {
 		fmt.Println("[getRecords]: rec:", *rec)
 		records = append(records, *rec)
 		fmt.Println("[getRecords]: records: ", records)
+		log("after offset:", dat[offset:])
 		i++
 
 	}
