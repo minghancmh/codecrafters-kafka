@@ -121,6 +121,7 @@ func handleConnection(conn net.Conn) {
 			res.Body.TopicsArray.Length = req.Body.Topics.Length
 
 			partitionRecords, topicRecords := api.DescribeTopicPartitionsFromMetadataFile()
+			log("reached line 124")
 
 			for _, top := range req.Body.Topics.Elements {
 				name := top.Name.Content
@@ -128,6 +129,7 @@ func handleConnection(conn net.Conn) {
 				if !ok {
 					log("Unable to find topic with name: ", name)
 				}
+				log("reached lined 132")
 				partitionRecords, ok := partitionRecords[tr.TopicUUID]
 				if !ok {
 					log("Unable to find partitions for topic with UUID: ", tr.TopicUUID)
@@ -138,6 +140,7 @@ func handleConnection(conn net.Conn) {
 				elem.Name.Length = uint64(len(name))
 				elem.TopicID = tr.TopicUUID
 				elem.IsInternal = 0
+				log("reached line 143")
 				for _, partitionRecord := range partitionRecords {
 					var part types.Partition
 					part.ErrorCode = 0
@@ -157,11 +160,13 @@ func handleConnection(conn net.Conn) {
 					part.TagBuffer = 0
 					elem.PartitionsArray.Elements = append(elem.PartitionsArray.Elements, part)
 				}
+				log("reached line 163")
 				elem.TopicAuthorizedOperations = 0x00000df8
 				elem.TagBuffer = 0
 
 				res.Body.TopicsArray.Elements = append(res.Body.TopicsArray.Elements, elem)
 				res.Body.TopicsArray.Length += 1
+				log("reached line 169")
 			}
 			res.Body.NextCursor = nil
 			res.Body.TagBuffer = 0
