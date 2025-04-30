@@ -198,17 +198,14 @@ func handleConnection(conn net.Conn) {
 			res.Body.ErrorCode = 0
 			res.Body.SessionId = 0
 
-			// TODO: change this later according to req spec
 			for _, topic := range req.Body.Topics.Elements {
 				var elem api.FetchResTopic
 				elem.TopicId = topic.TopicId
 
-				// TODO: change placeholder partition element
 				var partitionElem api.FetchResPartition
 				partitionElem.PartitionIndex = 0
 
 				tn, ok := topicUUIDtoTopicName[topic.TopicId]
-				// topicUUIDtoRecordBatch := make(map[types.UUID][]byte)
 				if !ok {
 					log("Topic name does not exist")
 					partitionElem.ErrorCode = FETCH_UNKNOWN_TOPIC
@@ -221,24 +218,9 @@ func handleConnection(conn net.Conn) {
 						partitionElem.Records.Elements = append(partitionElem.Records.Elements, rb)
 						partitionElem.Records.Length += 1
 					}
+					log("partitionElem.Records.Elements: %v", partitionElem.Records.Elements)
 				}
 
-				// if existsTopicID(topic.TopicId, topicRecords) {
-				// 	partitionElem.ErrorCode = 0
-				// } else {
-				// 	partitionElem.ErrorCode = FETCH_UNKNOWN_TOPIC
-				// }
-
-				// TODO: parsing multiple messages
-				// rb, ok := topicUUIDtoRecordBatch[topic.TopicId]
-				// if ok {
-				// 	// TODO change this:
-				// 	rb[7] = 0 // set record batch offset to 0
-				// 	partitionElem.Records.Elements = append(partitionElem.Records.Elements, rb)
-				// 	partitionElem.Records.Length = 1
-				// } else {
-				// 	partitionElem.Records.Length = 0
-				// }
 
 				elem.Partitions.Elements = append(elem.Partitions.Elements, partitionElem)
 				elem.Partitions.Length = uint64(len(elem.Partitions.Elements))
