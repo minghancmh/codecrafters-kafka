@@ -187,6 +187,8 @@ func handleConnection(conn net.Conn) {
 
 			_, topicRecords, topicUUIDtoRecordBatch := api.DescribeTopicPartitionsFromMetadataFile()
 
+			log("TopicUUIDToRecordBatch: %v", topicUUIDtoRecordBatch)
+
 			var res api.FetchResponseV16
 			res.Header.CorrelationID = req.Header.CorrelationID
 			res.Header.TagBuffer = 0
