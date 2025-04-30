@@ -100,7 +100,7 @@ func DescribeTopicPartitionsFromMetadataFile() (map[types.UUID][]PartitionRecord
 		log("Offset: %v\n", offset)
 		rb := deserializeRecordBatch(dat[offset:], 0)
 		lengthBatch := binary.BigEndian.Uint32(dat[offset+8 : offset+12])
-		offset = 12 + lengthBatch
+		offset += 12 + lengthBatch
 
 		fmt.Println("[describeTopicPartitions]: len(rb.records):", len(rb.records))
 
@@ -193,7 +193,6 @@ func getRecords(dat []byte, recordsLength uint32) []record {
 		fmt.Println("[getRecords]: rec:", *rec)
 		records = append(records, *rec)
 		fmt.Println("[getRecords]: records: ", records)
-		log("after offset:", dat[offset:])
 		i++
 
 	}
