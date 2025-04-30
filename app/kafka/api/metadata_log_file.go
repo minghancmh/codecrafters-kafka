@@ -2,7 +2,7 @@ package api
 
 import (
 	"encoding/binary"
-	"encoding/hex"
+	// "encoding/hex"
 	"fmt"
 	"os"
 
