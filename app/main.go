@@ -75,14 +75,15 @@ func handleConnection(conn net.Conn) {
 			api.DeserializeAPIVersionsRequest(buf[0:], &req)
 
 			var res api.APIVersionsResponse
+			res.Header.CorrelationID = req.Header.CorrelationID
 			if req.Header.ApiVersion > 4 {
 				log("Requested API Version not supported: %d\n", req.Header.ApiVersion)
-				res.Header.CorrelationID = req.Header.CorrelationID
 				res.Body.ErrorCode = UNSUPPORTED_VERSION
 				response := api.SerializeAPIVersionsResponse(&res)
 				conn.Write(response)
 				os.Exit(1)
 			}
+
 
 			res.Body.ErrorCode = 0
 			res.Body.ApiVersionsArray.Elements = make([]api.ApiVersionsElem, 0)
