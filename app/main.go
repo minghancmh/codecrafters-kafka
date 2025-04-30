@@ -208,11 +208,12 @@ func handleConnection(conn net.Conn) {
 				partitionElem.PartitionIndex = 0
 
 				tn, ok := topicUUIDtoTopicName[topic.TopicId]
-				topicUUIDtoRecordBatch := make(map[types.UUID][]byte)
+				// topicUUIDtoRecordBatch := make(map[types.UUID][]byte)
 				if !ok {
 					log("Topic name does not exist")
 					partitionElem.ErrorCode = FETCH_UNKNOWN_TOPIC
 				} else {
+					log("appending partition elem records")
 					partitionElem.ErrorCode = 0
 					filePath := fmt.Sprintf("/tmp/kraft-combined-logs/%s-0/00000000000000000000.log", tn)
 					rbArray := api.ReadLogFile(filePath)
@@ -229,15 +230,15 @@ func handleConnection(conn net.Conn) {
 				// }
 
 				// TODO: parsing multiple messages
-				rb, ok := topicUUIDtoRecordBatch[topic.TopicId]
-				if ok {
-					// TODO change this:
-					rb[7] = 0 // set record batch offset to 0
-					partitionElem.Records.Elements = append(partitionElem.Records.Elements, rb)
-					partitionElem.Records.Length = 1
-				} else {
-					partitionElem.Records.Length = 0
-				}
+				// rb, ok := topicUUIDtoRecordBatch[topic.TopicId]
+				// if ok {
+				// 	// TODO change this:
+				// 	rb[7] = 0 // set record batch offset to 0
+				// 	partitionElem.Records.Elements = append(partitionElem.Records.Elements, rb)
+				// 	partitionElem.Records.Length = 1
+				// } else {
+				// 	partitionElem.Records.Length = 0
+				// }
 
 				elem.Partitions.Elements = append(elem.Partitions.Elements, partitionElem)
 				elem.Partitions.Length = uint64(len(elem.Partitions.Elements))
