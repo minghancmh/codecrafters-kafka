@@ -113,7 +113,7 @@ func handleConnection(conn net.Conn) {
 		case DESCRIBE_TOPIC_PARTITIONS:
 			var req api.DescribeTopicPartitionsRequest
 			api.DeserializeTopicPartitionsRequest(buf[0:], &req)
-			log("DESCRIBE_TOPIC_PARTITIONS: parsedRequest:", req)
+			log("DESCRIBE_TOPIC_PARTITIONS: parsedRequest: %v", req)
 
 			var res api.DescribeTopicPartitionsResponse
 			res.Header.CorrelationID = req.Header.CorrelationID
