@@ -193,7 +193,7 @@ func getRecords(dat []byte, recordsLength uint32) []record {
 		// parse the record
 		rec := new(record)
 		offset += getRecord(dat[offset:], rec)
-		// fmt.Println("[getRecords]: rec:", *rec)
+		fmt.Println("[getRecords]: rec:", *rec)
 		records = append(records, *rec)
 		// fmt.Println("[getRecords]: records: ", records)
 		i++
@@ -218,11 +218,11 @@ func getRecord(dat []byte, resPtr *record) uint64 {
 	resPtr.timestampDelta = dat[offset+1]
 	resPtr.offsetDelta = dat[offset+2]
 	resPtr.keyLength = int8(zigzagDecode(uint64(dat[offset+3])))
-	// fmt.Println("[getRecord]: length:", resPtr.length)
-	// fmt.Println("[getRecord]: attributes:", resPtr.attributes)
-	// fmt.Println("[getRecord]: timestampDelta:", resPtr.timestampDelta)
-	// fmt.Println("[getRecord]: offsetDelta:", resPtr.offsetDelta)
-	// fmt.Println("[getRecord]: keyLength:", resPtr.keyLength)
+	fmt.Println("[getRecord]: length:", resPtr.length)
+	fmt.Println("[getRecord]: attributes:", resPtr.attributes)
+	fmt.Println("[getRecord]: timestampDelta:", resPtr.timestampDelta)
+	fmt.Println("[getRecord]: offsetDelta:", resPtr.offsetDelta)
+	fmt.Println("[getRecord]: keyLength:", resPtr.keyLength)
 
 	if resPtr.keyLength != -1 {
 		log("Key length:", resPtr.keyLength)
@@ -241,8 +241,8 @@ func getRecord(dat []byte, resPtr *record) uint64 {
 		resPtr.value = getRecordValue(dat[offset:])
 		log("value: %v", resPtr.value)
 
-		// resPtr.valueLength = int8(dat[offset+5+int(resPtr.keyLength)])
-		// resPtr.value = getRecordValue(dat[6+resPtr.keyLength:])
+		resPtr.valueLength = int8(dat[offset+5+int(resPtr.keyLength)])
+		resPtr.value = getRecordValue(dat[6+resPtr.keyLength:])
 	} else {
 		tmplen, nbytes := binary.Uvarint(dat[offset+4:])
 		if nbytes <= 0 {
@@ -272,8 +272,8 @@ func getRecordValue(dat []byte) recordValue {
 
 	frameVer := dat[0]
 	recordType := dat[1]
-	// fmt.Println("[getRecordValue]: frameVer:", frameVer)
-	// fmt.Println("[getRecordValue]: recordType:", recordType)
+	fmt.Println("[getRecordValue]: frameVer:", frameVer)
+	fmt.Println("[getRecordValue]: recordType:", recordType)
 
 	switch recordType {
 	case 0x2: // topic record
