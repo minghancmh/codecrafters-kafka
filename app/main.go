@@ -19,6 +19,7 @@ var log = logger.Log
 
 var UNSUPPORTED_VERSION uint16 = 35
 var UNKNOWN_TOPIC uint16 = 3
+var FETCH_UNKNOWN_TOPIC uint16 = 100
 
 var API_VERSION uint16 = 18
 var DESCRIBE_TOPIC_PARTITIONS uint16 = 75
@@ -193,8 +194,22 @@ func handleConnection(conn net.Conn) {
 			res.Body.SessionId = 0
 
 			// TODO: change this later according to req spec
-			res.Body.Responses.Length = 0
-			res.Body.Responses.Elements = make([]api.FetchResTopic, 0)
+			// res.Body.Responses.Length = 0
+			// res.Body.Responses.Elements = make([]api.FetchResTopic, 0)
+			for _, topic := range req.Body.Topics.Elements {
+				var elem api.FetchResTopic
+				elem.TopicId = topic.TopicId
+				// TODO: change placeholder partition element
+				var partitionElem api.FetchResPartition
+				partitionElem.PartitionIndex = 0
+				partitionElem.ErrorCode = FETCH_UNKNOWN_TOPIC
+				elem.Partitions.Elements = append(elem.Partitions.Elements, partitionElem)
+				elem.Partitions.Length = uint64(len(elem.Partitions.Elements))
+
+				res.Body.Responses.Elements = append(res.Body.Responses.Elements, elem)
+				res.Body.Responses.Length += 1
+			}
+
 			res.Body.TaggedFields = 0
 
 			response := api.SerializeFetchResponseV16(&res)
@@ -206,7 +221,6 @@ func handleConnection(conn net.Conn) {
 				os.Exit(1)
 			}
 			log("NumBytes written: %v", nbytes)
-
 
 		default:
 			fmt.Println("Unsupported case")
