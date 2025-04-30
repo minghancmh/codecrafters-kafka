@@ -139,7 +139,7 @@ func handleConnection(conn net.Conn) {
 				if !ok {
 					log("Unable to find partitions for topic with UUID: ", tr.TopicUUID)
 				}
-				elem.ErrorCode = 0
+
 				elem.Name.Content = name
 				elem.Name.Length = uint64(len(name))
 				elem.TopicID = tr.TopicUUID
