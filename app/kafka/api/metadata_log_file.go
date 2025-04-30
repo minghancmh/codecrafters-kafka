@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/binary"
+	"encoding/hex"
 	// "encoding/hex"
 	"fmt"
 	"os"
@@ -405,13 +406,13 @@ func ReadLogFile(path string) map[types.UUID][]byte {
 	if err != nil {
 		fmt.Println("Error reading file at path: ", path)
 	}
-	// log("dat:", dat)
-	// log("Hexdump dat: %s\n", hex.Dump(dat))
+	log("dat:", dat)
+	log("Hexdump dat: %s\n", hex.Dump(dat))
 
 	var offset uint32 = 0
 	// topicRecords := make(map[string]TopicRecord)               // topicName -> TopicRecord
 	// partitionRecords := make(map[types.UUID][]PartitionRecord) // topic UUID -> []PartitionRecord
-	topicUUIDtoRecordBatch := make(map[types.UUID][]byte)      // topicUUID -> serializedRecordBatch
+	topicUUIDtoRecordBatch := make(map[types.UUID][]byte) // topicUUID -> serializedRecordBatch
 
 	for offset < uint32(len(dat)) {
 		log("Offset: %v\n", offset)
