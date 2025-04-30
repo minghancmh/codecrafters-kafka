@@ -20,17 +20,9 @@ var log = logger.Log
 var UNSUPPORTED_VERSION uint16 = 35
 var UNKNOWN_TOPIC uint16 = 3
 
-var DESCRIBE_TOPIC_PARTITIONS uint16 = 75
-
-// DescribeTopicPartitions Request (Version: 0) => [topics] response_partition_limit cursor _tagged_fields
-//   topics => name _tagged_fields
-//     name => COMPACT_STRING
-//   response_partition_limit => INT32
-//   cursor => topic_name partition_index _tagged_fields
-//     topic_name => COMPACT_STRING
-//     partition_index => INT32
-
 var API_VERSION uint16 = 18
+var DESCRIBE_TOPIC_PARTITIONS uint16 = 75
+var FETCH uint16 = 1
 
 func main() {
 	l, err := net.Listen("tcp", "0.0.0.0:9092")
@@ -84,23 +76,21 @@ func handleConnection(conn net.Conn) {
 				os.Exit(1)
 			}
 
-
 			res.Body.ErrorCode = 0
 			res.Body.ApiVersionsArray.Elements = make([]api.ApiVersionsElem, 0)
 
 			// API Key 18 (APIVersions)
-			res.Body.ApiVersionsArray.Elements = append(res.Body.ApiVersionsArray.Elements, api.ApiVersionsElem{ApiKey: 18, MinSupportedVersion: 0, MaxSupportedVersion: 5, TagBuffer: 0})
+			res.Body.ApiVersionsArray.Elements = append(res.Body.ApiVersionsArray.Elements, api.ApiVersionsElem{ApiKey: API_VERSION, MinSupportedVersion: 0, MaxSupportedVersion: 5, TagBuffer: 0})
 
 			// API Key 75 (DescribeTopicPartitions)
-			res.Body.ApiVersionsArray.Elements = append(res.Body.ApiVersionsArray.Elements, api.ApiVersionsElem{ApiKey: 75, MinSupportedVersion: 0, MaxSupportedVersion: 0, TagBuffer: 0})
+			res.Body.ApiVersionsArray.Elements = append(res.Body.ApiVersionsArray.Elements, api.ApiVersionsElem{ApiKey: DESCRIBE_TOPIC_PARTITIONS, MinSupportedVersion: 0, MaxSupportedVersion: 0, TagBuffer: 0})
 
 			// API Key 1 (Fetch)
-			res.Body.ApiVersionsArray.Elements = append(res.Body.ApiVersionsArray.Elements, api.ApiVersionsElem{ApiKey: 1, MinSupportedVersion: 0, MaxSupportedVersion: 16, TagBuffer: 0})
-
+			res.Body.ApiVersionsArray.Elements = append(res.Body.ApiVersionsArray.Elements, api.ApiVersionsElem{ApiKey: FETCH, MinSupportedVersion: 0, MaxSupportedVersion: 16, TagBuffer: 0})
 
 			res.Body.ApiVersionsArray.Length = uint64(len(res.Body.ApiVersionsArray.Elements))
 
-			res.Body.ThrottleTime = 3735928559
+			res.Body.ThrottleTime = 3735928559 // 0xDEAFBEEF placeholder
 
 			res.Body.TagBuffer = 0x0
 
@@ -121,14 +111,11 @@ func handleConnection(conn net.Conn) {
 
 			var res api.DescribeTopicPartitionsResponse
 			res.Header.CorrelationID = req.Header.CorrelationID
-			log("corrId: %v\n", res.Header.CorrelationID)
 			res.Header.TagBuffer = 0x0
 			res.Body.ThrottleTime = 0
 			res.Body.TopicsArray.Elements = make([]types.TopicRes, 0)
-			log("eleemnts:%v\n", res.Body.TopicsArray.Elements)
 
 			partitionRecords, topicRecords := api.DescribeTopicPartitionsFromMetadataFile()
-			log("reached line 124")
 
 			for _, top := range req.Body.Topics.Elements {
 				var elem types.TopicRes
@@ -149,7 +136,6 @@ func handleConnection(conn net.Conn) {
 				elem.Name.Length = uint64(len(name))
 				elem.TopicID = tr.TopicUUID
 				elem.IsInternal = 0
-				log("reached line 143")
 				for idx, partitionRecord := range partitionRecords {
 					var part types.Partition
 					part.ErrorCode = 0
@@ -170,13 +156,12 @@ func handleConnection(conn net.Conn) {
 					elem.PartitionsArray.Elements = append(elem.PartitionsArray.Elements, part)
 					elem.PartitionsArray.Length += 1
 				}
-				log("reached line 163")
 				elem.TopicAuthorizedOperations = 0x00000df8
 				elem.TagBuffer = 0
 
 				res.Body.TopicsArray.Elements = append(res.Body.TopicsArray.Elements, elem)
 				res.Body.TopicsArray.Length += 1
-				log("reached line 169")
+
 			}
 			log("topicsArray: %v", res.Body.TopicsArray)
 			res.Body.NextCursor = nil
@@ -193,6 +178,35 @@ func handleConnection(conn net.Conn) {
 				os.Exit(1)
 			}
 			fmt.Printf("Num Bytes Written: %v\n", nbytes)
+
+		case FETCH:
+			var req api.FetchRequestV16
+			api.DeserializeFetchRequestV16(buf[0:], &req)
+			log("req: %v", req)
+
+			var res api.FetchResponseV16
+			res.Header.CorrelationID = req.Header.CorrelationID
+			res.Header.TagBuffer = 0
+
+			res.Body.ThrottleTimeMs = 0
+			res.Body.ErrorCode = 0
+			res.Body.SessionId = 0
+
+			// TODO: change this later according to req spec
+			res.Body.Responses.Length = 0
+			res.Body.Responses.Elements = make([]api.FetchResTopic, 0)
+			res.Body.TaggedFields = 0
+
+			response := api.SerializeFetchResponseV16(&res)
+
+			defer conn.Close()
+			nbytes, err := conn.Write(response)
+			if err != nil {
+				log("Error writing response: %s", err)
+				os.Exit(1)
+			}
+			log("NumBytes written: %v", nbytes)
+
 
 		default:
 			fmt.Println("Unsupported case")

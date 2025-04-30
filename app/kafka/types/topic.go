@@ -26,7 +26,7 @@ func TopicReqReader(data []byte) (TopicReq, int, error) {
 	if err != nil {
 		return TopicReq{}, 0, fmt.Errorf("Error decoding topicReq")
 	}
-	treq.TagBuffer = 0x0
+	treq.TagBuffer = data[consumed]
 	return treq, consumed+1, nil
 }
 
