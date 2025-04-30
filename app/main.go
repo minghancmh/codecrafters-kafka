@@ -94,7 +94,11 @@ func handleConnection(conn net.Conn) {
 			// API Key 75 (DescribeTopicPartitions)
 			res.Body.ApiVersionsArray.Elements = append(res.Body.ApiVersionsArray.Elements, api.ApiVersionsElem{ApiKey: 75, MinSupportedVersion: 0, MaxSupportedVersion: 0, TagBuffer: 0})
 
-			res.Body.ApiVersionsArray.Length = 2
+			// API Key 1 (Fetch)
+			res.Body.ApiVersionsArray.Elements = append(res.Body.ApiVersionsArray.Elements, api.ApiVersionsElem{ApiKey: 1, MinSupportedVersion: 0, MaxSupportedVersion: 16, TagBuffer: 0})
+
+
+			res.Body.ApiVersionsArray.Length = uint64(len(res.Body.ApiVersionsArray.Elements))
 
 			res.Body.ThrottleTime = 3735928559
 
