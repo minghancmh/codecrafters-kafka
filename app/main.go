@@ -116,7 +116,7 @@ func handleConnection(conn net.Conn) {
 			res.Body.ThrottleTime = 0
 			res.Body.TopicsArray.Elements = make([]types.TopicRes, 0)
 
-			partitionRecords, topicRecords, _ := api.DescribeTopicPartitionsFromMetadataFile()
+			partitionRecords, topicRecords := api.DescribeTopicPartitionsFromMetadataFile()
 
 			for _, top := range req.Body.Topics.Elements {
 				var elem types.TopicRes
@@ -185,9 +185,10 @@ func handleConnection(conn net.Conn) {
 			api.DeserializeFetchRequestV16(buf[0:], &req)
 			log("req: %v", req)
 
-			_, topicRecords, topicUUIDtoRecordBatch := api.DescribeTopicPartitionsFromMetadataFile()
+			_, topicRecords := api.DescribeTopicPartitionsFromMetadataFile()
+			topicUUIDtoTopicName := generateTopicUUIDtoTopicNamesMap(topicRecords)
 
-			log("TopicUUIDToRecordBatch: %v", topicUUIDtoRecordBatch)
+			// log("TopicUUIDToRecordBatch: %v", topicUUIDtoRecordBatch)
 
 			var res api.FetchResponseV16
 			res.Header.CorrelationID = req.Header.CorrelationID
@@ -205,11 +206,23 @@ func handleConnection(conn net.Conn) {
 				// TODO: change placeholder partition element
 				var partitionElem api.FetchResPartition
 				partitionElem.PartitionIndex = 0
-				if existsTopicID(topic.TopicId, topicRecords) {
-					partitionElem.ErrorCode = 0
-				} else {
+
+				tn, ok := topicUUIDtoTopicName[topic.TopicId]
+				topicUUIDtoRecordBatch := make(map[types.UUID][]byte)
+				if !ok {
+					log("Topic name does not exist")
 					partitionElem.ErrorCode = FETCH_UNKNOWN_TOPIC
+				} else {
+					partitionElem.ErrorCode = 0
+					fileName := fmt.Sprintf("/tmp/kraft-combined-logs/%s-0/00000000000000000000.log", tn)
+					topicUUIDtoRecordBatch = api.ReadLogFile(fileName)
 				}
+
+				// if existsTopicID(topic.TopicId, topicRecords) {
+				// 	partitionElem.ErrorCode = 0
+				// } else {
+				// 	partitionElem.ErrorCode = FETCH_UNKNOWN_TOPIC
+				// }
 
 				// TODO: parsing multiple messages
 				rb, ok := topicUUIDtoRecordBatch[topic.TopicId]
@@ -255,4 +268,12 @@ func existsTopicID(tid types.UUID, topicMetadata map[string]api.TopicRecord) boo
 		}
 	}
 	return false
+}
+
+func generateTopicUUIDtoTopicNamesMap(topicMetadata map[string]api.TopicRecord) map[types.UUID]string {
+	res := make(map[types.UUID]string)
+	for _, topic := range topicMetadata {
+		res[topic.TopicUUID] = topic.TopicName.Content
+	}
+	return res
 }

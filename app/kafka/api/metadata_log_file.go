@@ -47,12 +47,12 @@ func (PartitionRecord) isRecordValue() uint8    { return 0x3 }
 func (featureLevelRecord) isRecordValue() uint8 { return 0xc }
 
 type TopicRecord struct {
-	frameVersion      uint8
-	recordType        uint8
-	version           uint8
-	topicName         types.CompactString
+	FrameVersion      uint8
+	RecordType        uint8
+	Version           uint8
+	TopicName         types.CompactString
 	TopicUUID         types.UUID
-	taggedFieldsCount uint8
+	TaggedFieldsCount uint8
 }
 
 type PartitionRecord struct {
@@ -83,7 +83,7 @@ type featureLevelRecord struct {
 }
 
 // DescribeTopicPartitionsFromMetadataFile Utils
-func DescribeTopicPartitionsFromMetadataFile() (map[types.UUID][]PartitionRecord, map[string]TopicRecord, map[types.UUID][]byte) {
+func DescribeTopicPartitionsFromMetadataFile() (map[types.UUID][]PartitionRecord, map[string]TopicRecord) {
 	path := "/tmp/kraft-combined-logs/__cluster_metadata-0/00000000000000000000.log"
 	dat, err := os.ReadFile(path)
 	if err != nil {
@@ -95,7 +95,7 @@ func DescribeTopicPartitionsFromMetadataFile() (map[types.UUID][]PartitionRecord
 	var offset uint32 = 0
 	topicRecords := make(map[string]TopicRecord)               // topicName -> TopicRecord
 	partitionRecords := make(map[types.UUID][]PartitionRecord) // topic UUID -> []PartitionRecord
-	topicUUIDtoRecordBatch := make(map[types.UUID][]byte)          // topicUUID -> serializedRecordBatch
+	// topicUUIDtoRecordBatch := make(map[types.UUID][]byte)          // topicUUID -> serializedRecordBatch
 
 	for offset < uint32(len(dat)) {
 		log("Offset: %v\n", offset)
@@ -113,10 +113,10 @@ func DescribeTopicPartitionsFromMetadataFile() (map[types.UUID][]PartitionRecord
 			case 0x2:
 				// fmt.Println("[describeTopicPartitions]: Topic Record found!")
 				tr := val.(TopicRecord)
-				topicRecords[tr.topicName.Content] = tr
-				tr.topicName.Length = uint64(len(tr.topicName.Content))
+				topicRecords[tr.TopicName.Content] = tr
+				tr.TopicName.Length = uint64(len(tr.TopicName.Content))
 
-				topicUUIDtoRecordBatch[tr.TopicUUID] = dat[offset : offset+12+lengthBatch]
+				// topicUUIDtoRecordBatch[tr.TopicUUID] = dat[offset : offset+12+lengthBatch]
 
 			case 0x3: // partition record
 				// fmt.Println("[describeTopicPartitions]: Partition Record found!")
@@ -136,7 +136,7 @@ func DescribeTopicPartitionsFromMetadataFile() (map[types.UUID][]PartitionRecord
 		}
 		offset += 12 + lengthBatch
 	}
-	return partitionRecords, topicRecords, topicUUIDtoRecordBatch
+	return partitionRecords, topicRecords
 }
 
 func deserializeRecordBatch(dat []byte, offset uint64) RecordBatch {
@@ -291,19 +291,19 @@ func getRecordValue(dat []byte) recordValue {
 func parseTopicRecord(dat []byte, frameVer uint8) TopicRecord {
 	// fmt.Println("[parseTopicRecord]: Parsing Topic Record")
 	trPtr := new(TopicRecord)
-	trPtr.frameVersion = frameVer
-	trPtr.recordType = 0x2
-	trPtr.version = dat[0]
+	trPtr.FrameVersion = frameVer
+	trPtr.RecordType = 0x2
+	trPtr.Version = dat[0]
 
-	nbytes, err := trPtr.topicName.FromBytes(dat[1:])
+	nbytes, err := trPtr.TopicName.FromBytes(dat[1:])
 	if err != nil {
 		log("Error parsing topic name")
 	}
-	log("topicName: %s", trPtr.topicName.Content)
+	log("topicName: %s", trPtr.TopicName.Content)
 	offset := 1 + nbytes
 
 	copy(trPtr.TopicUUID[:], dat[offset:offset+16])
-	trPtr.taggedFieldsCount = dat[offset+16]
+	trPtr.TaggedFieldsCount = dat[offset+16]
 	// fmt.Println("[parseTopicRecord]: trPtr.frameVersion:", trPtr.frameVersion)
 	// fmt.Println("[parseTopicRecord]: trPtr.recordType:", trPtr.recordType)
 	// fmt.Println("[parseTopicRecord]: trPtr.version:", trPtr.version)
@@ -397,4 +397,59 @@ func parseFeatureLevelRecord(dat []byte, frameVer uint8) featureLevelRecord {
 
 	return fl
 
+}
+
+func ReadLogFile(path string) map[types.UUID][]byte {
+	dat, err := os.ReadFile(path)
+	if err != nil {
+		fmt.Println("Error reading file at path: ", path)
+	}
+	// log("dat:", dat)
+	// log("Hexdump dat: %s\n", hex.Dump(dat))
+
+	var offset uint32 = 0
+	topicRecords := make(map[string]TopicRecord)               // topicName -> TopicRecord
+	partitionRecords := make(map[types.UUID][]PartitionRecord) // topic UUID -> []PartitionRecord
+	topicUUIDtoRecordBatch := make(map[types.UUID][]byte)      // topicUUID -> serializedRecordBatch
+
+	for offset < uint32(len(dat)) {
+		log("Offset: %v\n", offset)
+		rb := deserializeRecordBatch(dat[offset:], 0)
+		lengthBatch := binary.BigEndian.Uint32(dat[offset+8 : offset+12])
+
+		// fmt.Println("[describeTopicPartitions]: len(rb.records):", len(rb.records))
+
+		for _, rec := range rb.records {
+			// fmt.Println("[describeTopicPartitions]: rec:", rec)
+			val := rec.value
+			// fmt.Println("[describeTopicPartitions]: rec.value:", rec.value)
+
+			switch val.isRecordValue() {
+			case 0x2:
+				// fmt.Println("[describeTopicPartitions]: Topic Record found!")
+				tr := val.(TopicRecord)
+				topicRecords[tr.TopicName.Content] = tr
+				tr.TopicName.Length = uint64(len(tr.TopicName.Content))
+
+				// topicUUIDtoRecordBatch[tr.TopicUUID] = dat[offset : offset+12+lengthBatch]
+
+			case 0x3: // partition record
+				// fmt.Println("[describeTopicPartitions]: Partition Record found!")
+				pr := val.(PartitionRecord)
+				_, ok := partitionRecords[pr.TopicUUID]
+				if !ok {
+					partitionRecords[pr.TopicUUID] = make([]PartitionRecord, 0)
+				}
+				partitionRecords[pr.TopicUUID] = append(partitionRecords[pr.TopicUUID], pr)
+
+			case 0xc:
+				// fmt.Println("[describeTopicPartitions]: feature level record parsing to be implemented")
+			default:
+				// fmt.Println("[describeTopicPartitions]: no record type found")
+			}
+
+		}
+		offset += 12 + lengthBatch
+	}
+	return topicUUIDtoRecordBatch
 }
