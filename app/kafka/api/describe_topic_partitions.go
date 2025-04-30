@@ -43,6 +43,7 @@ func DeserializeTopicPartitionsRequest(data []byte, dest *DescribeTopicPartition
 
 func deserializeTopicPartitionsRequestBody(data []byte) (describeTopicPartitionsRequestBody, int) {
 	var res describeTopicPartitionsRequestBody
+	log("data: %v", data[0:])
 	nbytes, err := res.Topics.FromBytes(data[0:], types.TopicReqReader)
 	if err != nil {
 		log("error decoding TopicReq")
