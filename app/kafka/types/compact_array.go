@@ -3,7 +3,11 @@ package types
 import (
 	"encoding/binary"
 	"fmt"
+
+	"github.com/codecrafters-io/kafka-starter-go/app/kafka/logger"
 )
+
+var log = logger.Log
 
 type CompactArray[T any] struct {
 	Length   uint64
@@ -38,6 +42,7 @@ func (ca *CompactArray[T]) FromBytes(data []byte, elementReader func([]byte) (T,
 
 func (ca *CompactArray[T]) ToBytes(elementWriter func(*T) []byte) []byte {
 	buf := make([]byte, 0)
+	log("compactArray:", ca)
 
 	buf = binary.AppendUvarint(buf, ca.Length+1)
 
