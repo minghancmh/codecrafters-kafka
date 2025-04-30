@@ -161,6 +161,7 @@ func handleConnection(conn net.Conn) {
 					part.OfflineReplicas.Elements = make([]types.Replica, 0)
 					part.TagBuffer = 0
 					elem.PartitionsArray.Elements = append(elem.PartitionsArray.Elements, part)
+					elem.PartitionsArray.Length += 1
 				}
 				log("reached line 163")
 				elem.TopicAuthorizedOperations = 0x00000df8
