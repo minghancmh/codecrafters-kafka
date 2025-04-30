@@ -121,8 +121,6 @@ func handleConnection(conn net.Conn) {
 			res.Body.ThrottleTime = 0
 			res.Body.TopicsArray.Elements = make([]types.TopicRes, 0)
 			log("eleemnts:%v\n", res.Body.TopicsArray.Elements)
-			res.Body.TopicsArray.Length = req.Body.Topics.Length
-			log("length:%v\n", res.Body.TopicsArray.Length)
 
 			partitionRecords, topicRecords := api.DescribeTopicPartitionsFromMetadataFile()
 			log("reached line 124")
