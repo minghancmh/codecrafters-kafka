@@ -185,6 +185,8 @@ func handleConnection(conn net.Conn) {
 			api.DeserializeFetchRequestV16(buf[0:], &req)
 			log("req: %v", req)
 
+			_, topicRecords := api.DescribeTopicPartitionsFromMetadataFile()
+
 			var res api.FetchResponseV16
 			res.Header.CorrelationID = req.Header.CorrelationID
 			res.Header.TagBuffer = 0
@@ -197,19 +199,23 @@ func handleConnection(conn net.Conn) {
 			for _, topic := range req.Body.Topics.Elements {
 				var elem api.FetchResTopic
 				elem.TopicId = topic.TopicId
+
 				// TODO: change placeholder partition element
 				var partitionElem api.FetchResPartition
 				partitionElem.PartitionIndex = 0
-				partitionElem.ErrorCode = 0
-				partitionElem.Records = 1
+				if existsTopicID(topic.TopicId, topicRecords) {
+					partitionElem.ErrorCode = 0
+				} else {
+					partitionElem.ErrorCode = FETCH_UNKNOWN_TOPIC
+				}
+				partitionElem.Records = 1 // records array is 0 elements
+
 				elem.Partitions.Elements = append(elem.Partitions.Elements, partitionElem)
 				elem.Partitions.Length = uint64(len(elem.Partitions.Elements))
-
 
 				res.Body.Responses.Elements = append(res.Body.Responses.Elements, elem)
 				res.Body.Responses.Length += 1
 			}
-
 
 			res.Body.TaggedFields = 0
 
@@ -230,89 +236,11 @@ func handleConnection(conn net.Conn) {
 	}
 }
 
-// Common Utils
-
-// func setMessageSize(buf *[]byte, msgSize uint32) uint32 {
-// 	tmp := new(bytes.Buffer)
-// 	err := binary.Write(tmp, binary.BigEndian, msgSize)
-// 	if err != nil {
-// 		fmt.Println("Setting msg size failed: ", err)
-// 		return 0
-// 	}
-// 	tmpBytes := tmp.Bytes()
-// 	copy((*buf)[0:4], tmpBytes)
-// 	return 4
-// }
-
-// func setCorrelationId(buf *[]byte, corrId uint32) uint32 {
-// 	tmp := new(bytes.Buffer)
-// 	err := binary.Write(tmp, binary.BigEndian, corrId)
-// 	if err != nil {
-// 		fmt.Println("Setting correlation ID failed: ", err)
-// 		return 0
-// 	}
-// 	tmpBytes := tmp.Bytes()
-// 	copy((*buf)[4:8], tmpBytes)
-// 	return 4
-// }
-
-// APIVersions Response Utils
-
-// func setErrorCode(buf *[]byte, errorCode uint16, offset uint32) uint32 {
-// 	tmp := new(bytes.Buffer)
-// 	err := binary.Write(tmp, binary.BigEndian, errorCode)
-// 	if err != nil {
-// 		fmt.Println("Setting error code failed: ", err)
-// 		return 0
-// 	}
-// 	tmpBytes := tmp.Bytes()
-// 	copy((*buf)[offset:offset+2], tmpBytes)
-// 	return 2
-// }
-
-// ApiVersions Response (Version: 3) => error_code [api_keys] throttle_time_ms _tagged_fields
-//
-//	error_code => INT16
-//	num_api_keys => byte (0x1 for 0 api_keys, 0x2 for 1 api_key, 0x3 for 2 api_key ... )
-//	api_keys => api_key min_version max_version _tagged_fields (_tagged_fields need to set to 0x0 even if not used)
-//	  api_key => INT16
-//	  min_version => INT16
-//	  max_version => INT16
-//	throttle_time_ms => INT32
-// func setAPIKey(buf *[]byte, apiKey uint16, minVer uint16, maxVer uint16, offset uint32) uint32 {
-// 	tmp := new(bytes.Buffer)
-
-// 	err := binary.Write(tmp, binary.BigEndian, apiKey)
-// 	err = binary.Write(tmp, binary.BigEndian, minVer)
-// 	err = binary.Write(tmp, binary.BigEndian, maxVer)
-// 	err = binary.Write(tmp, binary.BigEndian, uint8(0))
-// 	if err != nil {
-// 		fmt.Println("Setting APIVersionsAPIKey failed: ", err)
-// 		return 0
-// 	}
-
-// 	tmpBytes := tmp.Bytes()
-
-// 	copy((*buf)[offset:offset+7], tmpBytes)
-// 	return 7
-// }
-
-// func setThrottleTime(buf *[]byte, throttleTime uint32, offset uint32) uint32 {
-// 	tmp := new(bytes.Buffer)
-// 	err := binary.Write(tmp, binary.BigEndian, throttleTime)
-// 	if err != nil {
-// 		fmt.Println("Setting ThrottleTime failed: ", err)
-// 		return 0
-// 	}
-
-// 	tmpBytes := tmp.Bytes()
-
-// 	copy((*buf)[offset:offset+4], tmpBytes)
-// 	return 4
-// }
-
-// func setEnd(buf *[]byte, offset uint32) uint32 {
-// 	tmp := []byte{0xd, 0xe, 0xa, 0xd, 0xd, 0xe, 0xa, 0xd} // end delimiter for easier debugging
-// 	copy((*buf)[offset:offset+8], tmp)
-// 	return 8
-// }
+func existsTopicID(tid types.UUID, topicMetadata map[string]api.TopicRecord) bool {
+	for _, topic := range topicMetadata {
+		if topic.TopicUUID == tid {
+			return true
+		}
+	}
+	return false
+}
