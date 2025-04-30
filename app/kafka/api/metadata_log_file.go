@@ -102,22 +102,22 @@ func DescribeTopicPartitionsFromMetadataFile() (map[types.UUID][]PartitionRecord
 		lengthBatch := binary.BigEndian.Uint32(dat[offset+8 : offset+12])
 		offset += 12 + lengthBatch
 
-		fmt.Println("[describeTopicPartitions]: len(rb.records):", len(rb.records))
+		// fmt.Println("[describeTopicPartitions]: len(rb.records):", len(rb.records))
 
 		for _, rec := range rb.records {
-			fmt.Println("[describeTopicPartitions]: rec:", rec)
+			// fmt.Println("[describeTopicPartitions]: rec:", rec)
 			val := rec.value
-			fmt.Println("[describeTopicPartitions]: rec.value:", rec.value)
+			// fmt.Println("[describeTopicPartitions]: rec.value:", rec.value)
 
 			switch val.isRecordValue() {
 			case 0x2:
-				fmt.Println("[describeTopicPartitions]: Topic Record found!")
+				// fmt.Println("[describeTopicPartitions]: Topic Record found!")
 				tr := val.(TopicRecord)
 				topicRecords[tr.topicName.Content] = tr
 				tr.topicName.Length = uint64(len(tr.topicName.Content))
 
 			case 0x3: // partition record
-				fmt.Println("[describeTopicPartitions]: Partition Record found!")
+				// fmt.Println("[describeTopicPartitions]: Partition Record found!")
 				pr := val.(PartitionRecord)
 				_, ok := partitionRecords[pr.TopicUUID]
 				if !ok {
@@ -126,9 +126,9 @@ func DescribeTopicPartitionsFromMetadataFile() (map[types.UUID][]PartitionRecord
 				partitionRecords[pr.TopicUUID] = append(partitionRecords[pr.TopicUUID], pr)
 
 			case 0xc:
-				fmt.Println("[describeTopicPartitions]: feature level record parsing to be implemented")
+				// fmt.Println("[describeTopicPartitions]: feature level record parsing to be implemented")
 			default:
-				fmt.Println("[describeTopicPartitions]: no record type found")
+				// fmt.Println("[describeTopicPartitions]: no record type found")
 			}
 
 		}
@@ -139,43 +139,43 @@ func DescribeTopicPartitionsFromMetadataFile() (map[types.UUID][]PartitionRecord
 func deserializeRecordBatch(dat []byte, offset uint64) RecordBatch {
 	rb := new(RecordBatch)
 	rb.baseOffset = binary.BigEndian.Uint64(dat[offset : offset+8])
-	fmt.Printf("baseOffset: %d\n", rb.baseOffset)
+	// fmt.Printf("baseOffset: %d\n", rb.baseOffset)
 
 	rb.batchLength = binary.BigEndian.Uint32(dat[offset+8 : offset+12])
-	fmt.Printf("batchLength: %d\n", rb.batchLength)
+	// fmt.Printf("batchLength: %d\n", rb.batchLength)
 
 	rb.partitionLeaderEpoch = binary.BigEndian.Uint32(dat[offset+12 : offset+16])
-	fmt.Printf("partitionLeaderEpoch: %d\n", rb.partitionLeaderEpoch)
+	// fmt.Printf("partitionLeaderEpoch: %d\n", rb.partitionLeaderEpoch)
 
 	rb.magicByte = dat[offset+16]
-	fmt.Printf("magicByte: %d\n", rb.magicByte)
+	// fmt.Printf("magicByte: %d\n", rb.magicByte)
 
 	rb.crc = binary.BigEndian.Uint32(dat[offset+17 : offset+21])
-	fmt.Printf("crc: %d\n", rb.crc)
+	// fmt.Printf("crc: %d\n", rb.crc)
 
 	rb.attributes = binary.BigEndian.Uint16(dat[offset+21 : offset+23])
-	fmt.Printf("attributes: %d\n", rb.attributes)
+	// fmt.Printf("attributes: %d\n", rb.attributes)
 
 	rb.lastOffsetDelta = binary.BigEndian.Uint32(dat[offset+23 : offset+27])
-	fmt.Printf("lastOffsetDelta: %d\n", rb.lastOffsetDelta)
+	// fmt.Printf("lastOffsetDelta: %d\n", rb.lastOffsetDelta)
 
 	rb.baseTimestamp = binary.BigEndian.Uint64(dat[offset+27 : offset+35])
-	fmt.Printf("baseTimestamp: %d\n", rb.baseTimestamp)
+	// fmt.Printf("baseTimestamp: %d\n", rb.baseTimestamp)
 
 	rb.maxTimestamp = binary.BigEndian.Uint64(dat[offset+35 : offset+43])
-	fmt.Printf("maxTimestamp: %d\n", rb.maxTimestamp)
+	// fmt.Printf("maxTimestamp: %d\n", rb.maxTimestamp)
 
 	rb.producerID = binary.BigEndian.Uint64(dat[offset+43 : offset+51])
-	fmt.Printf("producerID: %d\n", rb.producerID)
+	// fmt.Printf("producerID: %d\n", rb.producerID)
 
 	rb.producerEpoch = binary.BigEndian.Uint16(dat[offset+51 : offset+53])
-	fmt.Printf("producerEpoch: %d\n", rb.producerEpoch)
+	// fmt.Printf("producerEpoch: %d\n", rb.producerEpoch)
 
 	rb.baseSequence = binary.BigEndian.Uint32(dat[offset+53 : offset+57])
-	fmt.Printf("baseSequence: %d\n", rb.baseSequence)
+	// fmt.Printf("baseSequence: %d\n", rb.baseSequence)
 
 	rb.recordsLength = binary.BigEndian.Uint32(dat[offset+57 : offset+61])
-	fmt.Printf("recordsLength: %d\n", rb.recordsLength)
+	// fmt.Printf("recordsLength: %d\n", rb.recordsLength)
 
 	rb.records = getRecords(dat[offset+61:], rb.recordsLength)
 
@@ -190,9 +190,9 @@ func getRecords(dat []byte, recordsLength uint32) []record {
 		// parse the record
 		rec := new(record)
 		offset += getRecord(dat[offset:], rec)
-		fmt.Println("[getRecords]: rec:", *rec)
+		// fmt.Println("[getRecords]: rec:", *rec)
 		records = append(records, *rec)
-		fmt.Println("[getRecords]: records: ", records)
+		// fmt.Println("[getRecords]: records: ", records)
 		i++
 
 	}
@@ -201,7 +201,7 @@ func getRecords(dat []byte, recordsLength uint32) []record {
 }
 
 func getRecord(dat []byte, resPtr *record) uint64 {
-	fmt.Println("[getRecord]: Getting Record")
+	// fmt.Println("[getRecord]: Getting Record")
 	// length := zigzagDecode(dat[0])
 	tmplen, nbytes := binary.Uvarint(dat[0:])
 	if nbytes <= 0 {
@@ -215,11 +215,11 @@ func getRecord(dat []byte, resPtr *record) uint64 {
 	resPtr.timestampDelta = dat[offset+1]
 	resPtr.offsetDelta = dat[offset+2]
 	resPtr.keyLength = int8(zigzagDecode(uint64(dat[offset+3])))
-	fmt.Println("[getRecord]: length:", resPtr.length)
-	fmt.Println("[getRecord]: attributes:", resPtr.attributes)
-	fmt.Println("[getRecord]: timestampDelta:", resPtr.timestampDelta)
-	fmt.Println("[getRecord]: offsetDelta:", resPtr.offsetDelta)
-	fmt.Println("[getRecord]: keyLength:", resPtr.keyLength)
+	// fmt.Println("[getRecord]: length:", resPtr.length)
+	// fmt.Println("[getRecord]: attributes:", resPtr.attributes)
+	// fmt.Println("[getRecord]: timestampDelta:", resPtr.timestampDelta)
+	// fmt.Println("[getRecord]: offsetDelta:", resPtr.offsetDelta)
+	// fmt.Println("[getRecord]: keyLength:", resPtr.keyLength)
 
 	if resPtr.keyLength != -1 {
 		log("Key length:", resPtr.keyLength)
@@ -253,8 +253,8 @@ func getRecord(dat []byte, resPtr *record) uint64 {
 	}
 
 	resPtr.headersArrayCount = dat[resPtr.length]
-	fmt.Println("[getRecord]: headersArrayCount:", resPtr.headersArrayCount)
-	fmt.Println("[getRecord]: resPtr: ", resPtr)
+	// fmt.Println("[getRecord]: headersArrayCount:", resPtr.headersArrayCount)
+	// fmt.Println("[getRecord]: resPtr: ", resPtr)
 
 	return uint64(resPtr.length + uint64(nbytes))
 }
@@ -265,12 +265,12 @@ func zigzagDecode(n uint64) int64 {
 
 func getRecordValue(dat []byte) recordValue {
 
-	fmt.Println("[getRecordValue]: Getting Record Value")
+	// fmt.Println("[getRecordValue]: Getting Record Value")
 
 	frameVer := dat[0]
 	recordType := dat[1]
-	fmt.Println("[getRecordValue]: frameVer:", frameVer)
-	fmt.Println("[getRecordValue]: recordType:", recordType)
+	// fmt.Println("[getRecordValue]: frameVer:", frameVer)
+	// fmt.Println("[getRecordValue]: recordType:", recordType)
 
 	switch recordType {
 	case 0x2: // topic record
@@ -286,7 +286,7 @@ func getRecordValue(dat []byte) recordValue {
 }
 
 func parseTopicRecord(dat []byte, frameVer uint8) TopicRecord {
-	fmt.Println("[parseTopicRecord]: Parsing Topic Record")
+	// fmt.Println("[parseTopicRecord]: Parsing Topic Record")
 	trPtr := new(TopicRecord)
 	trPtr.frameVersion = frameVer
 	trPtr.recordType = 0x2
@@ -301,79 +301,79 @@ func parseTopicRecord(dat []byte, frameVer uint8) TopicRecord {
 
 	copy(trPtr.TopicUUID[:], dat[offset:offset+16])
 	trPtr.taggedFieldsCount = dat[offset+16]
-	fmt.Println("[parseTopicRecord]: trPtr.frameVersion:", trPtr.frameVersion)
-	fmt.Println("[parseTopicRecord]: trPtr.recordType:", trPtr.recordType)
-	fmt.Println("[parseTopicRecord]: trPtr.version:", trPtr.version)
-	fmt.Println("[parseTopicRecord]: trPtr.topicName:", trPtr.topicName)
-	fmt.Println("[parseTopicRecord]: trPtr.topicUUID:", trPtr.TopicUUID)
-	fmt.Println("[parseTopicRecord]: trPtr.taggedFieldsCount:", trPtr.taggedFieldsCount)
+	// fmt.Println("[parseTopicRecord]: trPtr.frameVersion:", trPtr.frameVersion)
+	// fmt.Println("[parseTopicRecord]: trPtr.recordType:", trPtr.recordType)
+	// fmt.Println("[parseTopicRecord]: trPtr.version:", trPtr.version)
+	// fmt.Println("[parseTopicRecord]: trPtr.topicName:", trPtr.topicName)
+	// fmt.Println("[parseTopicRecord]: trPtr.topicUUID:", trPtr.TopicUUID)
+	// fmt.Println("[parseTopicRecord]: trPtr.taggedFieldsCount:", trPtr.taggedFieldsCount)
 
 	return *trPtr
 }
 
 func deserializePartitionRecord(dat []byte, frameVer uint8) PartitionRecord {
-	fmt.Println("[parsePartitionRecord]: Parsing Partition Record")
+	// fmt.Println("[parsePartitionRecord]: Parsing Partition Record")
 
 	prPtr := new(PartitionRecord)
 	prPtr.FrameVersion = frameVer
 	prPtr.RecordType = 0x3
 	prPtr.Version = dat[0]
 	prPtr.PartitionID = binary.BigEndian.Uint32(dat[1:5])
-	log("FrameVersion: %v", prPtr.FrameVersion)
-	log("RecordType: %v", prPtr.RecordType)
-	log("Version: %v", prPtr.Version)
-	log("PartitionID: %v", prPtr.PartitionID)
+	// log("FrameVersion: %v", prPtr.FrameVersion)
+	// log("RecordType: %v", prPtr.RecordType)
+	// log("Version: %v", prPtr.Version)
+	// log("PartitionID: %v", prPtr.PartitionID)
 	copy(prPtr.TopicUUID[:], dat[5:21])
-	log("topicUUID: %v", prPtr.TopicUUID)
+	// log("topicUUID: %v", prPtr.TopicUUID)
 
 	nbytes, err := prPtr.ReplicaArray.FromBytes(dat[21:], types.ReplicaArrayReader)
 	if err != nil {
 		log("error decoding replica array")
 	}
-	log("ReplicaArray:", prPtr.ReplicaArray)
+	// log("ReplicaArray:", prPtr.ReplicaArray)
 	offset := 21 + nbytes
 
 	nbytes, err = prPtr.InSyncReplicaArray.FromBytes(dat[offset:], types.ReplicaArrayReader)
 	if err != nil {
 		log("error decoding insync replica array")
 	}
-	log("InSyncReplicaArray:", prPtr.InSyncReplicaArray)
+	// log("InSyncReplicaArray:", prPtr.InSyncReplicaArray)
 	offset += nbytes
 
 	nbytes, err = prPtr.RemovingReplicasArray.FromBytes(dat[offset:], types.ReplicaArrayReader)
 	if err != nil {
 		log("error decoding removing replica array")
 	}
-	log("RemovingReplicasArray:", prPtr.RemovingReplicasArray)
+	// log("RemovingReplicasArray:", prPtr.RemovingReplicasArray)
 	offset += nbytes
 
 	nbytes, err = prPtr.AddingReplicasArray.FromBytes(dat[offset:], types.ReplicaArrayReader)
 	if err != nil {
 		log("error decoding adding replica array")
 	}
-	log("AddingReplicasArray:", prPtr.AddingReplicasArray)
+	// log("AddingReplicasArray:", prPtr.AddingReplicasArray)
 	offset += nbytes
 
 	prPtr.Leader = binary.BigEndian.Uint32(dat[offset : offset+4])
 	prPtr.LeaderEpoch = binary.BigEndian.Uint32(dat[offset+4 : offset+8])
 	prPtr.PartitionEpoch = binary.BigEndian.Uint32(dat[offset+8 : offset+12])
-	log("Leader: %v", prPtr.Leader)
-	log("LeaderEpoch: %v", prPtr.LeaderEpoch)
-	log("PartitionEpoch: %v", prPtr.PartitionEpoch)
+	// log("Leader: %v", prPtr.Leader)
+	// log("LeaderEpoch: %v", prPtr.LeaderEpoch)
+	// log("PartitionEpoch: %v", prPtr.PartitionEpoch)
 
 	offset = offset + 12
 	nbytes, err = prPtr.DirectoriesArray.FromBytes(dat[offset:], types.UUIDReader)
-	log("DirectoriesArray: %v", prPtr.DirectoriesArray)
+	// log("DirectoriesArray: %v", prPtr.DirectoriesArray)
 
 	offset += nbytes
 	prPtr.TaggedFieldsCount = dat[offset]
-	log("TaggedFieldsCount: %v", prPtr.TaggedFieldsCount)
+	// log("TaggedFieldsCount: %v", prPtr.TaggedFieldsCount)
 	return *prPtr
 
 }
 
 func parseFeatureLevelRecord(dat []byte, frameVer uint8) featureLevelRecord {
-	fmt.Println("[parseFeatureLevelRecord]: Parsing FeatureLevelRecord")
+	// fmt.Println("[parseFeatureLevelRecord]: Parsing FeatureLevelRecord")
 	flPtr := new(featureLevelRecord)
 	fl := *flPtr
 	fl.frameVersion = frameVer
@@ -384,13 +384,13 @@ func parseFeatureLevelRecord(dat []byte, frameVer uint8) featureLevelRecord {
 	fl.featureLevel = binary.BigEndian.Uint16(dat[2+fl.nameLength-1 : 3+fl.nameLength])
 	fl.taggedFieldsCount = dat[3+fl.nameLength]
 
-	fmt.Println("[parseFeatureLevelRecord]: frameVersion:", fl.frameVersion)
-	fmt.Println("[parseFeatureLevelRecord]: recordType:", fl.recordType)
-	fmt.Println("[parseFeatureLevelRecord]: version:", fl.version)
-	fmt.Println("[parseFeatureLevelRecord]: nameLength:", fl.nameLength)
-	fmt.Println("[parseFeatureLevelRecord]: name:", fl.name)
-	fmt.Println("[parseFeatureLevelRecord]: featureLevel:", fl.featureLevel)
-	fmt.Println("[parseFeatureLevelRecord]: taggedFieldsCount:", fl.taggedFieldsCount)
+	// fmt.Println("[parseFeatureLevelRecord]: frameVersion:", fl.frameVersion)
+	// fmt.Println("[parseFeatureLevelRecord]: recordType:", fl.recordType)
+	// fmt.Println("[parseFeatureLevelRecord]: version:", fl.version)
+	// fmt.Println("[parseFeatureLevelRecord]: nameLength:", fl.nameLength)
+	// fmt.Println("[parseFeatureLevelRecord]: name:", fl.name)
+	// fmt.Println("[parseFeatureLevelRecord]: featureLevel:", fl.featureLevel)
+	// fmt.Println("[parseFeatureLevelRecord]: taggedFieldsCount:", fl.taggedFieldsCount)
 
 	return fl
 
