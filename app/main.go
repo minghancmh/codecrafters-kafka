@@ -214,8 +214,12 @@ func handleConnection(conn net.Conn) {
 					partitionElem.ErrorCode = FETCH_UNKNOWN_TOPIC
 				} else {
 					partitionElem.ErrorCode = 0
-					fileName := fmt.Sprintf("/tmp/kraft-combined-logs/%s-0/00000000000000000000.log", tn)
-					topicUUIDtoRecordBatch = api.ReadLogFile(fileName)
+					filePath := fmt.Sprintf("/tmp/kraft-combined-logs/%s-0/00000000000000000000.log", tn)
+					rbArray := api.ReadLogFile(filePath)
+					for _, rb := range rbArray {
+						partitionElem.Records.Elements = append(partitionElem.Records.Elements, rb)
+						partitionElem.Records.Length += 1
+					}
 				}
 
 				// if existsTopicID(topic.TopicId, topicRecords) {
