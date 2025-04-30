@@ -33,7 +33,7 @@ type FetchResPartition struct {
 	LogStartOffset       uint64
 	AbortedTransactions  types.CompactArray[AbortedTransaction]
 	PreferredReadReplica uint32
-	Records              byte // TODO: Underlying type is a RecordBatch according to ChatGPT, else just set to 0x0 for null
+	Records              types.CompactArray[[]byte]
 	TaggedFields         uint8
 }
 
@@ -79,7 +79,7 @@ func fetchResPartitionWriter(r *FetchResPartition) []byte {
 	buf = binary.BigEndian.AppendUint64(buf, r.LogStartOffset)
 	buf = append(buf, r.AbortedTransactions.ToBytes(abortedTransactionWriter)...)
 	buf = binary.BigEndian.AppendUint32(buf, r.PreferredReadReplica)
-	buf = append(buf, r.Records)
+	buf = append(buf, r.Records.ToBytes(byteElemWriter)...)
 	buf = append(buf, r.TaggedFields)
 	return buf
 }
@@ -89,5 +89,11 @@ func abortedTransactionWriter(r *AbortedTransaction) []byte {
 	buf = binary.BigEndian.AppendUint64(buf, r.ProducerId)
 	buf = binary.BigEndian.AppendUint64(buf, r.FirstOffset)
 	buf = append(buf, r.TaggedFields)
+	return buf
+}
+
+func byteElemWriter(bytestream *[]byte) []byte {
+	buf := make([]byte, len(*bytestream))
+	copy(buf[:], (*bytestream)[:])
 	return buf
 }
