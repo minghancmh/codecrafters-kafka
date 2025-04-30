@@ -172,6 +172,7 @@ func handleConnection(conn net.Conn) {
 				res.Body.TopicsArray.Length += 1
 				log("reached line 169")
 			}
+			log("topicsArray: %v", res.Body.TopicsArray)
 			res.Body.NextCursor = nil
 			res.Body.TagBuffer = 0
 			log("DESCRIBE_TOPIC_PARTITIONS: res:", res)
