@@ -146,10 +146,10 @@ func handleConnection(conn net.Conn) {
 				elem.TopicID = tr.TopicUUID
 				elem.IsInternal = 0
 				log("reached line 143")
-				for _, partitionRecord := range partitionRecords {
+				for idx, partitionRecord := range partitionRecords {
 					var part types.Partition
 					part.ErrorCode = 0
-					part.PartitionIndex = 0
+					part.PartitionIndex = uint32(idx)
 					part.LeaderID = partitionRecord.Leader
 					part.LeaderEpoch = partitionRecord.LeaderEpoch
 					part.ReplicaNodes.Length = partitionRecord.ReplicaArray.Length
