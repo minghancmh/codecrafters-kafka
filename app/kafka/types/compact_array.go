@@ -15,6 +15,7 @@ type CompactArray[T any] struct {
 }
 
 func (ca *CompactArray[T]) FromBytes(data []byte, elementReader func([]byte) (T, int, error)) (consumed int, err error) {
+	log("data: %v", data)
 	length, nbytes := binary.Uvarint(data)
 	if nbytes <= 0 {
 		return 0, fmt.Errorf("Invalid Uvarint encoding")
@@ -34,6 +35,7 @@ func (ca *CompactArray[T]) FromBytes(data []byte, elementReader func([]byte) (T,
 		if err != nil {
 			return 0, err
 		}
+		log("elem: %v", elem)
 		ca.Elements[i] = elem
 		offset += consumed
 	}
