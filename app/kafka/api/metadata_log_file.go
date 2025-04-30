@@ -400,6 +400,7 @@ func parseFeatureLevelRecord(dat []byte, frameVer uint8) featureLevelRecord {
 }
 
 func ReadLogFile(path string) map[types.UUID][]byte {
+	log("===================READING LOG FILE===================")
 	dat, err := os.ReadFile(path)
 	if err != nil {
 		fmt.Println("Error reading file at path: ", path)
