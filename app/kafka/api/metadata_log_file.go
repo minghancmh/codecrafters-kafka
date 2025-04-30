@@ -142,43 +142,43 @@ func DescribeTopicPartitionsFromMetadataFile() (map[types.UUID][]PartitionRecord
 func deserializeRecordBatch(dat []byte, offset uint64) RecordBatch {
 	rb := new(RecordBatch)
 	rb.baseOffset = binary.BigEndian.Uint64(dat[offset : offset+8])
-	// fmt.Printf("baseOffset: %d\n", rb.baseOffset)
+	fmt.Printf("baseOffset: %d\n", rb.baseOffset)
 
 	rb.batchLength = binary.BigEndian.Uint32(dat[offset+8 : offset+12])
-	// fmt.Printf("batchLength: %d\n", rb.batchLength)
+	fmt.Printf("batchLength: %d\n", rb.batchLength)
 
 	rb.partitionLeaderEpoch = binary.BigEndian.Uint32(dat[offset+12 : offset+16])
-	// fmt.Printf("partitionLeaderEpoch: %d\n", rb.partitionLeaderEpoch)
+	fmt.Printf("partitionLeaderEpoch: %d\n", rb.partitionLeaderEpoch)
 
 	rb.magicByte = dat[offset+16]
-	// fmt.Printf("magicByte: %d\n", rb.magicByte)
+	fmt.Printf("magicByte: %d\n", rb.magicByte)
 
 	rb.crc = binary.BigEndian.Uint32(dat[offset+17 : offset+21])
-	// fmt.Printf("crc: %d\n", rb.crc)
+	fmt.Printf("crc: %d\n", rb.crc)
 
 	rb.attributes = binary.BigEndian.Uint16(dat[offset+21 : offset+23])
-	// fmt.Printf("attributes: %d\n", rb.attributes)
+	fmt.Printf("attributes: %d\n", rb.attributes)
 
 	rb.lastOffsetDelta = binary.BigEndian.Uint32(dat[offset+23 : offset+27])
-	// fmt.Printf("lastOffsetDelta: %d\n", rb.lastOffsetDelta)
+	fmt.Printf("lastOffsetDelta: %d\n", rb.lastOffsetDelta)
 
 	rb.baseTimestamp = binary.BigEndian.Uint64(dat[offset+27 : offset+35])
-	// fmt.Printf("baseTimestamp: %d\n", rb.baseTimestamp)
+	fmt.Printf("baseTimestamp: %d\n", rb.baseTimestamp)
 
 	rb.maxTimestamp = binary.BigEndian.Uint64(dat[offset+35 : offset+43])
-	// fmt.Printf("maxTimestamp: %d\n", rb.maxTimestamp)
+	fmt.Printf("maxTimestamp: %d\n", rb.maxTimestamp)
 
 	rb.producerID = binary.BigEndian.Uint64(dat[offset+43 : offset+51])
-	// fmt.Printf("producerID: %d\n", rb.producerID)
+	fmt.Printf("producerID: %d\n", rb.producerID)
 
 	rb.producerEpoch = binary.BigEndian.Uint16(dat[offset+51 : offset+53])
-	// fmt.Printf("producerEpoch: %d\n", rb.producerEpoch)
+	fmt.Printf("producerEpoch: %d\n", rb.producerEpoch)
 
 	rb.baseSequence = binary.BigEndian.Uint32(dat[offset+53 : offset+57])
-	// fmt.Printf("baseSequence: %d\n", rb.baseSequence)
+	fmt.Printf("baseSequence: %d\n", rb.baseSequence)
 
 	rb.recordsLength = binary.BigEndian.Uint32(dat[offset+57 : offset+61])
-	// fmt.Printf("recordsLength: %d\n", rb.recordsLength)
+	fmt.Printf("recordsLength: %d\n", rb.recordsLength)
 
 	rb.records = getRecords(dat[offset+61:], rb.recordsLength)
 
@@ -408,47 +408,48 @@ func ReadLogFile(path string) map[types.UUID][]byte {
 	// log("Hexdump dat: %s\n", hex.Dump(dat))
 
 	var offset uint32 = 0
-	topicRecords := make(map[string]TopicRecord)               // topicName -> TopicRecord
-	partitionRecords := make(map[types.UUID][]PartitionRecord) // topic UUID -> []PartitionRecord
+	// topicRecords := make(map[string]TopicRecord)               // topicName -> TopicRecord
+	// partitionRecords := make(map[types.UUID][]PartitionRecord) // topic UUID -> []PartitionRecord
 	topicUUIDtoRecordBatch := make(map[types.UUID][]byte)      // topicUUID -> serializedRecordBatch
 
 	for offset < uint32(len(dat)) {
 		log("Offset: %v\n", offset)
 		rb := deserializeRecordBatch(dat[offset:], 0)
 		lengthBatch := binary.BigEndian.Uint32(dat[offset+8 : offset+12])
+		log("rb:", rb)
 
 		// fmt.Println("[describeTopicPartitions]: len(rb.records):", len(rb.records))
 
-		for _, rec := range rb.records {
-			// fmt.Println("[describeTopicPartitions]: rec:", rec)
-			val := rec.value
-			// fmt.Println("[describeTopicPartitions]: rec.value:", rec.value)
+		// for _, rec := range rb.records {
+		// 	// fmt.Println("[describeTopicPartitions]: rec:", rec)
+		// 	val := rec.value
+		// 	// fmt.Println("[describeTopicPartitions]: rec.value:", rec.value)
 
-			switch val.isRecordValue() {
-			case 0x2:
-				// fmt.Println("[describeTopicPartitions]: Topic Record found!")
-				tr := val.(TopicRecord)
-				topicRecords[tr.TopicName.Content] = tr
-				tr.TopicName.Length = uint64(len(tr.TopicName.Content))
+		// 	switch val.isRecordValue() {
+		// 	case 0x2:
+		// 		// fmt.Println("[describeTopicPartitions]: Topic Record found!")
+		// 		tr := val.(TopicRecord)
+		// 		topicRecords[tr.TopicName.Content] = tr
+		// 		tr.TopicName.Length = uint64(len(tr.TopicName.Content))
 
-				// topicUUIDtoRecordBatch[tr.TopicUUID] = dat[offset : offset+12+lengthBatch]
+		// 		// topicUUIDtoRecordBatch[tr.TopicUUID] = dat[offset : offset+12+lengthBatch]
 
-			case 0x3: // partition record
-				// fmt.Println("[describeTopicPartitions]: Partition Record found!")
-				pr := val.(PartitionRecord)
-				_, ok := partitionRecords[pr.TopicUUID]
-				if !ok {
-					partitionRecords[pr.TopicUUID] = make([]PartitionRecord, 0)
-				}
-				partitionRecords[pr.TopicUUID] = append(partitionRecords[pr.TopicUUID], pr)
+		// 	case 0x3: // partition record
+		// 		// fmt.Println("[describeTopicPartitions]: Partition Record found!")
+		// 		pr := val.(PartitionRecord)
+		// 		_, ok := partitionRecords[pr.TopicUUID]
+		// 		if !ok {
+		// 			partitionRecords[pr.TopicUUID] = make([]PartitionRecord, 0)
+		// 		}
+		// 		partitionRecords[pr.TopicUUID] = append(partitionRecords[pr.TopicUUID], pr)
 
-			case 0xc:
-				// fmt.Println("[describeTopicPartitions]: feature level record parsing to be implemented")
-			default:
-				// fmt.Println("[describeTopicPartitions]: no record type found")
-			}
+		// 	case 0xc:
+		// 		// fmt.Println("[describeTopicPartitions]: feature level record parsing to be implemented")
+		// 	default:
+		// 		// fmt.Println("[describeTopicPartitions]: no record type found")
+		// 	}
 
-		}
+		// }
 		offset += 12 + lengthBatch
 	}
 	return topicUUIDtoRecordBatch
