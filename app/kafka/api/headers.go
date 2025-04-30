@@ -34,7 +34,7 @@ func deserializeRequestHeader(data []byte) (requestHeader, int) {
 	clientID, nbytes := deserializeReqClientID(data[8:])
 	res.ClientID = clientID
 	res.tagBuffer = data[8+nbytes]
-	return res, 8 + nbytes
+	return res, 9 + nbytes
 
 }
 
