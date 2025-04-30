@@ -138,7 +138,7 @@ func handleConnection(conn net.Conn) {
 				log("reached lined 132")
 				partitionRecords, ok := partitionRecords[tr.TopicUUID]
 				if !ok {
-					log("Unable to find partitions for topic with UUID: ", tr.TopicUUID)
+					log("Unable to find partitions for topic with UUID: %v", tr.TopicUUID)
 				}
 
 				elem.Name.Content = name
