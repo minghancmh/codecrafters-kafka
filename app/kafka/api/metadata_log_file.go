@@ -89,8 +89,8 @@ func DescribeTopicPartitionsFromMetadataFile() (map[types.UUID][]PartitionRecord
 	if err != nil {
 		fmt.Println("Error reading file at path: ", path)
 	}
-	log("dat:", dat)
-	log("Hexdump dat: %s\n", hex.Dump(dat))
+	// log("dat:", dat)
+	// log("Hexdump dat: %s\n", hex.Dump(dat))
 
 	var offset uint32 = 0
 	topicRecords := make(map[string]TopicRecord)               // topicName -> TopicRecord

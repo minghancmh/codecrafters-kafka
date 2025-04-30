@@ -68,6 +68,8 @@ func SerializeDescribeTopicPartitionsResponse(res *DescribeTopicPartitionsRespon
 	buf := make([]byte, 4)
 	buf = append(buf, serializeResponseHeaderV1(&res.Header)...)
 	buf = append(buf, serializeDescribeTopicPartitionsResponseBody(&res.Body)...)
+	msgSize := len(buf) - 4
+	binary.BigEndian.PutUint32(buf[0:4], uint32(msgSize))
 	return buf
 }
 
