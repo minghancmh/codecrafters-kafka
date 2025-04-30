@@ -126,17 +126,19 @@ func handleConnection(conn net.Conn) {
 			log("reached line 124")
 
 			for _, top := range req.Body.Topics.Elements {
+				var elem types.TopicRes
+
 				name := top.Name.Content
 				tr, ok := topicRecords[name]
 				if !ok {
 					log("Unable to find topic with name: ", name)
+					elem.ErrorCode = UNKNOWN_TOPIC
 				}
 				log("reached lined 132")
 				partitionRecords, ok := partitionRecords[tr.TopicUUID]
 				if !ok {
 					log("Unable to find partitions for topic with UUID: ", tr.TopicUUID)
 				}
-				var elem types.TopicRes
 				elem.ErrorCode = 0
 				elem.Name.Content = name
 				elem.Name.Length = uint64(len(name))
