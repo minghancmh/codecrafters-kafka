@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/binary"
 	"fmt"
+	"io"
 	"net"
 	"os"
 
@@ -48,6 +49,10 @@ func handleConnection(conn net.Conn) {
 	for {
 
 		_, err := conn.Read(buf)
+		if err == io.EOF {
+			log("connection closed by client. done reading.")
+			os.Exit(0)
+		}
 		if err != nil {
 			log("read err: %s", err)
 			os.Exit(1)
@@ -216,8 +221,9 @@ func handleConnection(conn net.Conn) {
 					rbArray := api.ReadLogFile(filePath)
 					for _, rb := range rbArray {
 						partitionElem.Records.Elements = append(partitionElem.Records.Elements, rb)
-						partitionElem.Records.Length += 1
+						// partitionElem.Records.Length += 1
 					}
+					partitionElem.Records.Length = 3
 					log("partitionElem.Records.Elements: %v", partitionElem.Records.Elements)
 				}
 
