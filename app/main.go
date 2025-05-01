@@ -49,7 +49,7 @@ func handleConnection(conn net.Conn) {
 
 		_, err := conn.Read(buf)
 		if err != nil {
-			log("read err:", err)
+			log("read err: %s", err)
 			os.Exit(1)
 		}
 		log("buf:", buf)
