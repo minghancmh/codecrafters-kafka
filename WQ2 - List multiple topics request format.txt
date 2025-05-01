@@ -1,0 +1,19 @@
+00 00 00 2d //msgSize
+00 4b // apiKey
+00 00 //apiVersion 
+57 69 6e 20 //correlationID 
+00 0c //clientID lenght
+6b 61 66 6b 61 2d 74 65 73 74 65 72 //client id kafka-tester
+00 //tag buffer
+
+// req body
+04 //arr length
+04 66 6f 6f (foo) // topic name #1
+00 // topic tag buffer
+04 70 61 78 (pax) // topic name #2
+00 // topic tag buffer
+04 70 61 7a (paz) // topic name #3
+00 // topic tag buffer
+00 00 00 04 // response parittion limit 
+ff // cursor 
+00 //tag buffer

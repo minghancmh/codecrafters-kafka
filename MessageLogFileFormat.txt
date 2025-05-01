@@ -1,0 +1,91 @@
+map[
+    [0 0 0 0 0 0 64 0 128 0 0 0 0 0 0 34]:[0 0 0 0 0 0 0 6 0 0 0 228 0 0 0 1 2 226 124 186 37 0 0 0 0 0 2 0 0 1 145 224 91 45 21 0 0 1 145 224 91 45 21 255 255 255 255 255 255 255 255 255 255 255 255 255 255 0 0 0 3 60 0 0 0 1 48 1 2 0 4 113 117 120 0 0 0 0 0 0 64 0 128 0 0 0 0 0 0 34 0 0 144 1 0 0 2 1 130 1 1 3 1 0 0 0 0 0 0 0 0 0 0 64 0 128 0 0 0 0 0 0 34 2 0 0 0 1 2 0 0 0 1 1 1 0 0 0 1 0 0 0 0 0 0 0 0 2 16 0 0 0 0 0 64 0 128 0 0 0 0 0 0 1 0 0 144 1 0 0 4 1 130 1 1 3 1 0 0 0 1 0 0 0 0 0 0 64 0 128 0 0 0 0 0 0 34 2 0 0 0 1 2 0 0 0 1 1 1 0 0 0 1 0 0 0 0 0 0 0 0 2 16 0 0 0 0 0 64 0 128 0 0 0 0 0 0 1 0 0] 
+    [0 0 0 0 0 0 64 0 128 0 0 0 0 0 0 114]:[0 0 0 0 0 0 0 2 0 0 0 154 0 0 0 1 2 209 230 235 156 0 0 0 0 0 1 0 0 1 145 224 91 45 21 0 0 1 145 224 91 45 21 255 255 255 255 255 255 255 255 255 255 255 255 255 255 0 0 0 2 60 0 0 0 1 48 1 2 0 4 98 97 122 0 0 0 0 0 0 64 0 128 0 0 0 0 0 0 114 0 0 144 1 0 0 2 1 130 1 1 3 1 0 0 0 0 0 0 0 0 0 0 64 0 128 0 0 0 0 0 0 114 2 0 0 0 1 2 0 0 0 1 1 1 0 0 0 1 0 0 0 0 0 0 0 0 2 16 0 0 0 0 0 64 0 128 0 0 0 0 0 0 1 0 0] 
+    [0 0 0 0 0 0 64 0 128 0 0 0 0 0 0 120]:[0 0 0 0 0 0 0 4 0 0 0 154 0 0 0 1 2 17 99 113 207 0 0 0 0 0 1 0 0 1 145 224 91 45 21 0 0 1 145 224 91 45 21 255 255 255 255 255 255 255 255 255 255 255 255 255 255 0 0 0 2 60 0 0 0 1 48 1 2 0 4 112 97 120 0 0 0 0 0 0 64 0 128 0 0 0 0 0 0 120 0 0 144 1 0 0 2 1 130 1 1 3 1 0 0 0 0 0 0 0 0 0 0 64 0 128 0 0 0 0 0 0 120 2 0 0 0 1 2 0 0 0 1 1 1 0 0 0 1 0 0 0 0 0 0 0 0 2 16 0 0 0 0 0 64 0 128 0 0 0 0 0 0 1 0 0]]
+
+
+[tester::#EG2] [Decoder] - .ResponseHeader
+[tester::#EG2] [Decoder]   - .correlation_id (68574021)
+[tester::#EG2] [Decoder]   - .TAG_BUFFER
+[tester::#EG2] [Decoder] - .ResponseBody
+[tester::#EG2] [Decoder]   - .throttle_time_ms (0)
+[tester::#EG2] [Decoder]   - .error_code (0)
+[tester::#EG2] [Decoder]   - .session_id (0)
+[tester::#EG2] [Decoder]   - .num_responses (1)
+[tester::#EG2] [Decoder]   - .TopicResponse[0]
+[tester::#EG2] [Decoder]     - .topic_id (00000000-0000-4000-8000-000000000095)
+[tester::#EG2] [Decoder]     - .num_partitions (1)
+[tester::#EG2] [Decoder]     - .PartitionResponse[0]
+[tester::#EG2] [Decoder]       - .partition_index (0)
+[tester::#EG2] [Decoder]       - .error_code (0)
+[tester::#EG2] [Decoder]       - .high_watermark (0)
+[tester::#EG2] [Decoder]       - .last_stable_offset (0)
+[tester::#EG2] [Decoder]       - .log_start_offset (0)
+[tester::#EG2] [Decoder]       - .num_aborted_transactions (0)
+[tester::#EG2] [Decoder]       - .preferred_read_replica (0)
+[tester::#EG2] [Decoder]       - .compact_records_length (1)
+[tester::#EG2] [Decoder]       - .RecordBatch[0]
+[tester::#EG2] [Decoder]         - .base_offset (0)
+[tester::#EG2] [Decoder]         - .batch_length (154)
+[tester::#EG2] [Decoder]         - .partition_leader_epoch (1)
+[tester::#EG2] [Decoder]         - .magic_byte (2)
+[tester::#EG2] [Decoder]         - .crc (809910882)
+[tester::#EG2] [Decoder]         - .record_attributes (0)
+[tester::#EG2] [Decoder]         - .last_offset_delta (1)
+[tester::#EG2] [Decoder]         - .base_timestamp (1726045957397)
+[tester::#EG2] [Decoder]         - .max_timestamp (1726045957397)
+[tester::#EG2] [Decoder]         - .producer_id (-1)
+[tester::#EG2] [Decoder]         - .producer_epoch (-1)
+[tester::#EG2] [Decoder]         - .base_sequence (-1)
+[tester::#EG2] [Decoder]         - .num_records (2)
+[tester::#EG2] [Decoder]         - .Record[0]
+[tester::#EG2] [Decoder]           - .length (30)
+[tester::#EG2] [Decoder]           - .attributes (0)
+[tester::#EG2] [Decoder]           - .timestamp_delta (0)
+[tester::#EG2] [Decoder]           - .offset_delta (0)
+[tester::#EG2] [Decoder]           - .key_length (-1)
+[tester::#EG2] [Decoder]           - .key ("")
+[tester::#EG2] [Decoder]           - .value_length (24)
+[tester::#EG2] [Decoder]           - .value ("\x01\x02\x00\x04bar\x00\x00\x00\x00\x00\x00@\x00\x80\x00\x00\x00\x00\x00\x00\x95\x00")
+[tester::#EG2] [Decoder]           - .num_headers (0)
+[tester::#EG2] [Decoder]         - .Record[1]
+[tester::#EG2] [Decoder]           - .length (72)
+[tester::#EG2] [Decoder]           - .attributes (0)
+[tester::#EG2] [Decoder]           - .timestamp_delta (0)
+[tester::#EG2] [Decoder]           - .offset_delta (1)
+[tester::#EG2] [Decoder]           - .key_length (-1)
+[tester::#EG2] [Decoder]           - .key ("")
+[tester::#EG2] [Decoder]           - .value_length (65)
+[tester::#EG2] [Decoder]           - .value ("\x01\x03\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00@\x00\x80\x00\x00\x00\x00\x00\x00\x95\x02\x00\x00\x00\x01\x02\x00\x00\x00\x01\x01\x01\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x02\x10\x00\x00\x00\x00\x00@\x00\x80\x00\x00\x00\x00\x00\x00\x01\x00")
+[tester::#EG2] [Decoder]           - .num_headers (0)
+[tester::#EG2] [Decoder]       - .TAG_BUFFER
+[tester::#EG2] [Decoder]     - .TAG_BUFFER
+[tester::#EG2] [Decoder]   - .TAG_BUFFER
+
+
+
+00 00 00 00 00 00 00 00 // base offset
+00 00 00 52 // batch length (dec: 82)
+00 00 00 00 // partition leader epuch
+02 // magic byte
+8b aa 87 2a //crc
+00 00 // attributes
+00 00 00 00 //last offset delta
+00 00 01 91 e0 5b 6d 8b // base timestamp
+00 00 01 91 e0 5b 6d 8b // max timestamp
+00 00 00 00 00 00 00 00 // producer id
+00 00 // producer epoch
+00 00 00 00 // base sequence
+00 00 00 01 // records length
+40 // length
+00 //attributes
+00 // timestamp delta
+00 // offset delta
+01 // key length
+34 // value length
+
+48 65 6c 6c 6f 20 52 65 76 65 
+72 73 65 20 45 6e 67 69 6e 65
+65 72 69 6e 67 21 (length 26 string)
+
+00 // tag buffer

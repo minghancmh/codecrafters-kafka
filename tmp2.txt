@@ -1,0 +1,79 @@
+[tester::#FD8] Received:
+[tester::#FD8] Hex (bytes 154-169)                             | ASCII
+[tester::#FD8] ------------------------------------------------+------------------
+[tester::#FD8] 21 00 00 00 00 00 00 00 00 01 00 00 00 52 00 00 | !............R..
+[tester::#FD8]                 ^                                      ^
+[tester::#FD8] Error: unexpected 94 bytes remaining in decoder after decoding FetchResponse
+[tester::#FD8] Context:
+[tester::#FD8] - Fetch Response v16
+[tester::#FD8]   - Response Body
+
+
+[tester::#FD8] Hexdump of received "Fetch" response: 
+[tester::#FD8] Idx  | Hex                                             | ASCII
+[tester::#FD8] -----+-------------------------------------------------+-----------------
+[tester::#FD8] 0000 | 00 00 00 fd 5f a7 5c b3 00 00 00 00 00 00 00 00 | ...._.\.........
+[tester::#FD8] 0010 | 00 00 00 02 00 00 00 00 00 00 40 00 80 00 00 00 | ..........@.....
+[tester::#FD8] 0020 | 00 00 00 12 02 00 00 00 00 00 00 00 00 00 00 00 | ................
+[tester::#FD8] 0030 | 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 | ................
+[tester::#FD8] 0040 | 00 00 00 01 00 00 00 00 03 00 00 00 00 00 00 00 | ................
+[tester::#FD8] 0050 | 00 00 00 00 4b 00 00 00 00 02 55 60 53 93 00 00 | ....K.....U`S...
+[tester::#FD8] 0060 | 00 00 00 00 00 00 01 91 e0 5b 6d 8b 00 00 01 91 | .........[m.....
+[tester::#FD8] 0070 | e0 5b 6d 8b 00 00 00 00 00 00 00 00 00 00 00 00 | .[m.............
+[tester::#FD8] 0080 | 00 00 00 00 00 01 32 00 00 00 01 26 48 65 6c 6c | ......2....&Hell
+[tester::#FD8] 0090 | 6f 20 43 6f 64 65 43 72 61 66 74 65 72 73 21 00 | o CodeCrafters!.
+[tester::#FD8] 00a0 | 00 00 00 00 00 00 00 01 00 00 00 52 00 00 00 00 | ...........R....
+[tester::#FD8] 00b0 | 02 8b aa 87 2a 00 00 00 00 00 00 00 00 01 91 e0 | ....*...........
+[tester::#FD8] 00c0 | 5b 6d 8b 00 00 01 91 e0 5b 6d 8b 00 00 00 00 00 | [m......[m......
+[tester::#FD8] 00d0 | 00 00 00 00 00 00 00 00 00 00 00 00 01 40 00 00 | .............@..
+[tester::#FD8] 00e0 | 00 01 34 48 65 6c 6c 6f 20 52 65 76 65 72 73 65 | ..4Hello Reverse
+[tester::#FD8] 00f0 | 20 45 6e 67 69 6e 65 65 72 69 6e 67 21 00 00 00 |  Engineering!...
+[tester::#FD8] 0100 | 00   
+
+[tester::#FD8] [Decoder] - .ResponseHeader
+[tester::#FD8] [Decoder]   - .correlation_id (1604803763)
+[tester::#FD8] [Decoder]   - .TAG_BUFFER
+[tester::#FD8] [Decoder] - .ResponseBody
+[tester::#FD8] [Decoder]   - .throttle_time_ms (0)
+[tester::#FD8] [Decoder]   - .error_code (0)
+[tester::#FD8] [Decoder]   - .session_id (0)
+[tester::#FD8] [Decoder]   - .num_responses (1)
+[tester::#FD8] [Decoder]   - .TopicResponse[0]
+[tester::#FD8] [Decoder]     - .topic_id (00000000-0000-4000-8000-000000000012)
+[tester::#FD8] [Decoder]     - .num_partitions (1)
+[tester::#FD8] [Decoder]     - .PartitionResponse[0]
+[tester::#FD8] [Decoder]       - .partition_index (0)
+[tester::#FD8] [Decoder]       - .error_code (0)
+[tester::#FD8] [Decoder]       - .high_watermark (0)
+[tester::#FD8] [Decoder]       - .last_stable_offset (0)
+[tester::#FD8] [Decoder]       - .log_start_offset (0)
+[tester::#FD8] [Decoder]       - .num_aborted_transactions (0)
+[tester::#FD8] [Decoder]       - .preferred_read_replica (0)
+[tester::#FD8] [Decoder]       - .compact_records_length (2)
+[tester::#FD8] [Decoder]       - .RecordBatch[0]
+[tester::#FD8] [Decoder]         - .base_offset (0)
+[tester::#FD8] [Decoder]         - .batch_length (75)
+[tester::#FD8] [Decoder]         - .partition_leader_epoch (0)
+[tester::#FD8] [Decoder]         - .magic_byte (2)
+[tester::#FD8] [Decoder]         - .crc (1432376211)
+[tester::#FD8] [Decoder]         - .record_attributes (0)
+[tester::#FD8] [Decoder]         - .last_offset_delta (0)
+[tester::#FD8] [Decoder]         - .base_timestamp (1726045973899)
+[tester::#FD8] [Decoder]         - .max_timestamp (1726045973899)
+[tester::#FD8] [Decoder]         - .producer_id (0)
+[tester::#FD8] [Decoder]         - .producer_epoch (0)
+[tester::#FD8] [Decoder]         - .base_sequence (0)
+[tester::#FD8] [Decoder]         - .num_records (1)
+[tester::#FD8] [Decoder]         - .Record[0]
+[tester::#FD8] [Decoder]           - .length (25)
+[tester::#FD8] [Decoder]           - .attributes (0)
+[tester::#FD8] [Decoder]           - .timestamp_delta (0)
+[tester::#FD8] [Decoder]           - .offset_delta (0)
+[tester::#FD8] [Decoder]           - .key_length (-1)
+[tester::#FD8] [Decoder]           - .key ("")
+[tester::#FD8] [Decoder]           - .value_length (19)
+[tester::#FD8] [Decoder]           - .value ("Hello CodeCrafters!")
+[tester::#FD8] [Decoder]           - .num_headers (0)
+[tester::#FD8] [Decoder]       - .TAG_BUFFER
+[tester::#FD8] [Decoder]     - .TAG_BUFFER
+[tester::#FD8] [Decoder]   - .TAG_BUFFER

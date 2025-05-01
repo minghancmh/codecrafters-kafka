@@ -1,0 +1,86 @@
+0 0 0 0 0 0 0 1  // base offset
+0 0 0 79 // batch length
+0 0 0 1 // partition leader epoch
+2 // magic
+176 105 69 124 // CRC b0
+0 0 // attributes
+0 0 0 0 // last offset delta
+0 0 1 145 224 90 248 24 // base timestamp
+0 0 1 145 224 90 248 24 //max timestamp
+255 255 255 255 255 255 255 255 // producer ID
+255 255 // producer epoch
+255 255 255 255 //base sequence
+0 0 0 1 // records length
+58 // record length
+0 // attributes
+0 // timestamp delta
+0 // offset delta
+1 // key length
+46 // value length
+
+1  // frame version
+12 // type (Feature Level Record)
+0 // version
+17 // name length
+109 101 116 97 100 97 116 97 46 118 101 114 115 105 111 110 //name (metadata.version)
+0 20 // feature Level
+0 //tagged fields count
+0 //headers array count
+
+
+
+
+0 0 0 0 0 0 0 2 //base offset
+0 0 0 154 //batch length
+0 0 0 1 //partition leader epoch
+2 //magic byte
+155 124 68 49 //CRC
+0 0 //attributes
+0 0 0 1 //last offset delta
+0 0 1 145 224 91 45 21 //base timestamp
+0 0 1 145 224 91 45 21 //max timestamp
+255 255 255 255 255 255 255 255 // producer ID
+255 255 //producer epoch
+255 255 255 255 //base sequence
+0 0 0 2 // records length -> 2 records in the records batch
+60 //length
+0 //attributes
+0 //timestamp delta
+0 // offset delta
+1 // key length
+48 //value length
+1 //frame version
+2 // type (TopicRecord) 
+0 // version
+4 // name length (name length is 3)
+98 97 122 // topic name (baz)
+0 0 0 0 0 0 64 0 128 0 0 0 0 0 0 100 // topic UUID
+0 // tagged fields count
+0 //headers array count
+144 1 //length
+0 //attributes
+0 // timestamp delta
+2 // offset delta
+1 //key length
+130 1 //value length
+1 // frameVersion
+3 // type (PartitionRecord)
+1 // version
+0 0 0 0 //partition ID
+0 0 0 0 0 0 64 0 128 0 0 0 0 0 0 100 //topicUUID
+2 //lengthOfReplicaArray (length 1)
+0 0 0 1 // replica array
+2 //length of insync replica array
+0 0 0 1 //insync replica array
+1 //length of removing replicas array
+1 //length of adding replicas array
+0 0 0 1 //leader
+0 0 0 0 //leader epoch
+0 0 0 0 //partition epoch
+2 //length of directories array
+16 0 0 0 0 0 64 0 128 0 0 0 0 0 0 1 //directories array
+0 // tagged fields
+0 //headers array count
+
+
+0 0 0 0 0 0 0 4 0 0 0 154 0 0 0 1 2 238 169 193 133 0 0 0 0 0 1 0 0 1 145 224 91 45 21 0 0 1 145 224 91 45 21 255 255 255 255 255 255 255 255 255 255 255 255 255 255 0 0 0 2 60 0 0 0 1 48 1 2 0 4 102 111 111 0 0 0 0 0 0 64 0 128 0 0 0 0 0 0 41 0 0 144 1 0 0 2 1 130 1 1 3 1 0 0 0 0 0 0 0 0 0 0 64 0 128 0 0 0 0 0 0 41 2 0 0 0 1 2 0 0 0 1 1 1 0 0 0 1 0 0 0 0 0 0 0 0 2 16 0 0 0 0 0 64 0 128 0 0 0 0 0 0 1 0 0 0 0 0 0 0 0 0 6 0 0 0 228 0 0 0 1 2 46 179 150 86 0 0 0 0 0 2 0 0 1 145 224 91 45 21 0 0 1 145 224 91 45 21 255 255 255 255 255 255 255 255 255 255 255 255 255 255 0 0 0 3 60 0 0 0 1 48 1 2 0 4 112 97 122 0 0 0 0 0 0 64 0 128 0 0 0 0 0 0 132 0 0 144 1 0 0 2 1 130 1 1 3 1 0 0 0 0 0 0 0 0 0 0 64 0 128 0 0 0 0 0 0 132 2 0 0 0 1 2 0 0 0 1 1 1 0 0 0 1 0 0 0 0 0 0 0 0 2 16 0 0 0 0 0 64 0 128 0 0 0 0 0 0 1 0 0 144 1 0 0 4 1 130 1 1 3 1 0 0 0 1 0 0 0 0 0 0 64 0 128 0 0 0 0 0 0 132 2 0 0 0 1 2 0 0 0 1 1 1 0 0 0 1 0 0 0 0 0 0 0 0 2 16 0 0 0 0 0 64 0 128 0 0 0 0 0 0 1 0 0
