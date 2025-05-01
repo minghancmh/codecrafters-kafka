@@ -59,11 +59,6 @@ func handleConnection(conn net.Conn) {
 		}
 		log("buf:", buf)
 
-		// parse the message
-		// messageSize := binary.BigEndian.Uint32(buf[0:4])
-		// reqHeader.apiKey := binary.BigEndian.Uint16(buf[4:6])
-		// reqHeader.apiVersion := binary.BigEndian.Uint16(buf[6:8])
-		// reqHeader.correlationID := binary.BigEndian.Uint32(buf[8:12])
 
 		apiKey := binary.BigEndian.Uint16(buf[4:6])
 
@@ -224,7 +219,6 @@ func handleConnection(conn net.Conn) {
 						partitionElem.Records.Length += uint64(len(rb))
 					}
 
-					// partitionElem.Records.Length = 200 // TODO: this represents bytes to read (?) change this
 					log("partitionElem.Records.Elements: %v", partitionElem.Records.Elements)
 				}
 

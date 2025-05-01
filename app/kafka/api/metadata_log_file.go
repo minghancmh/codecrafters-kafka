@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/binary"
+	"encoding/hex"
 	"fmt"
 	"os"
 
@@ -93,37 +94,27 @@ func DescribeTopicPartitionsFromMetadataFile() (map[types.UUID][]PartitionRecord
 	if err != nil {
 		fmt.Println("Error reading file at path: ", path)
 	}
-	// log("dat:", dat)
-	// log("Hexdump dat: %s\n", hex.Dump(dat))
+	log("Hexdump dat: %s\n", hex.Dump(dat))
 
 	var offset uint32 = 0
 	topicRecords := make(map[string]TopicRecord)               // topicName -> TopicRecord
 	partitionRecords := make(map[types.UUID][]PartitionRecord) // topic UUID -> []PartitionRecord
-	// topicUUIDtoRecordBatch := make(map[types.UUID][]byte)          // topicUUID -> serializedRecordBatch
 
 	for offset < uint32(len(dat)) {
 		log("Offset: %v\n", offset)
 		rb := deserializeRecordBatch(dat[offset:], 0)
 		lengthBatch := binary.BigEndian.Uint32(dat[offset+8 : offset+12])
 
-		// fmt.Println("[describeTopicPartitions]: len(rb.records):", len(rb.records))
-
 		for _, rec := range rb.records {
-			// fmt.Println("[describeTopicPartitions]: rec:", rec)
 			val := rec.value
-			// fmt.Println("[describeTopicPartitions]: rec.value:", rec.value)
 
 			switch val.isRecordValue() {
 			case 0x2:
-				// fmt.Println("[describeTopicPartitions]: Topic Record found!")
 				tr := val.(TopicRecord)
 				topicRecords[tr.TopicName.Content] = tr
 				tr.TopicName.Length = uint64(len(tr.TopicName.Content))
 
-				// topicUUIDtoRecordBatch[tr.TopicUUID] = dat[offset : offset+12+lengthBatch]
-
 			case 0x3: // partition record
-				// fmt.Println("[describeTopicPartitions]: Partition Record found!")
 				pr := val.(PartitionRecord)
 				_, ok := partitionRecords[pr.TopicUUID]
 				if !ok {
@@ -132,9 +123,9 @@ func DescribeTopicPartitionsFromMetadataFile() (map[types.UUID][]PartitionRecord
 				partitionRecords[pr.TopicUUID] = append(partitionRecords[pr.TopicUUID], pr)
 
 			case 0xc:
-				// fmt.Println("[describeTopicPartitions]: feature level record parsing to be implemented")
+				fmt.Println("[describeTopicPartitions]: feature level record parsing to be implemented")
 			default:
-				// fmt.Println("[describeTopicPartitions]: no record type found")
+				fmt.Println("[describeTopicPartitions]: no record type found")
 			}
 
 		}
@@ -199,7 +190,6 @@ func getRecords(dat []byte, recordsLength uint32) []record {
 		offset += getRecord(dat[offset:], rec)
 		fmt.Println("[getRecords]: rec:", *rec)
 		records = append(records, *rec)
-		// fmt.Println("[getRecords]: records: ", records)
 		i++
 
 	}
@@ -214,14 +204,14 @@ func getRecord(dat []byte, resPtr *record) uint64 {
 	if nbytes <= 0 {
 		log("Invalid Uvarint encoding!")
 	}
-	resPtr.length = uint64(zigzagDecode(tmplen))
+	resPtr.length = uint64(zigzag64Decode(tmplen))
 	log("resPtr.length:", resPtr.length)
 	offset := nbytes
 
 	resPtr.attributes = dat[offset]
 	resPtr.timestampDelta = dat[offset+1]
 	resPtr.offsetDelta = dat[offset+2]
-	resPtr.keyLength = int8(zigzagDecode(uint64(dat[offset+3])))
+	resPtr.keyLength = int8(zigzag64Decode(uint64(dat[offset+3])))
 	fmt.Println("[getRecord]: length:", resPtr.length)
 	fmt.Println("[getRecord]: attributes:", resPtr.attributes)
 	fmt.Println("[getRecord]: timestampDelta:", resPtr.timestampDelta)
@@ -239,7 +229,7 @@ func getRecord(dat []byte, resPtr *record) uint64 {
 		if nbytes <= 0 {
 			log("Invalid decode of value length!")
 		}
-		resPtr.valueLength = int8(zigzagDecode(tmplen))
+		resPtr.valueLength = int8(zigzag64Decode(tmplen))
 		offset = offset + nbytes
 		log("valueLength: %v", resPtr.valueLength)
 		resPtr.value = getRecordValue(dat[offset:])
@@ -252,7 +242,7 @@ func getRecord(dat []byte, resPtr *record) uint64 {
 		if nbytes <= 0 {
 			log("Invalid decode of value length!")
 		}
-		resPtr.valueLength = int8(zigzagDecode(tmplen))
+		resPtr.valueLength = int8(zigzag64Decode(tmplen))
 		offset = offset + 4 + nbytes
 		log("valueLength: %v", resPtr.valueLength)
 		resPtr.value = getRecordValue(dat[offset:])
@@ -260,13 +250,11 @@ func getRecord(dat []byte, resPtr *record) uint64 {
 	}
 
 	resPtr.headersArrayCount = dat[resPtr.length]
-	// fmt.Println("[getRecord]: headersArrayCount:", resPtr.headersArrayCount)
-	// fmt.Println("[getRecord]: resPtr: ", resPtr)
 
 	return uint64(resPtr.length + uint64(nbytes))
 }
 
-func zigzagDecode(n uint64) int64 {
+func zigzag64Decode(n uint64) int64 {
 	return int64((n >> 1) ^ uint64((int64(n&1)<<63)>>63))
 }
 
@@ -276,8 +264,6 @@ func getRecordValue(dat []byte) recordValue {
 
 	frameVer := dat[0]
 	recordType := dat[1]
-	fmt.Println("[getRecordValue]: frameVer:", frameVer)
-	fmt.Println("[getRecordValue]: recordType:", recordType)
 
 	switch recordType {
 	case 0x2: // topic record
@@ -402,5 +388,3 @@ func parseFeatureLevelRecord(dat []byte, frameVer uint8) featureLevelRecord {
 	return fl
 
 }
-
-
