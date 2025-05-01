@@ -221,10 +221,10 @@ func handleConnection(conn net.Conn) {
 					rbArray := api.ReadLogFile(filePath)
 					for _, rb := range rbArray {
 						partitionElem.Records.Elements = append(partitionElem.Records.Elements, rb)
-						// partitionElem.Records.Length += 1
+						partitionElem.Records.Length += uint64(len(rb))
 					}
 
-					partitionElem.Records.Length = 200
+					// partitionElem.Records.Length = 200 // TODO: this represents bytes to read (?) change this
 					log("partitionElem.Records.Elements: %v", partitionElem.Records.Elements)
 				}
 
