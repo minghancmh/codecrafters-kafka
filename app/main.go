@@ -223,7 +223,8 @@ func handleConnection(conn net.Conn) {
 						partitionElem.Records.Elements = append(partitionElem.Records.Elements, rb)
 						// partitionElem.Records.Length += 1
 					}
-					partitionElem.Records.Length = 3
+
+					partitionElem.Records.Length = 200
 					log("partitionElem.Records.Elements: %v", partitionElem.Records.Elements)
 				}
 
